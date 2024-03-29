@@ -22,4 +22,4 @@ Esse nulla Lorem veniam commodo in est consequat sit. Pariatur magna eu est aliq
 
 Anim cillum est consequat nulla ipsum commodo commodo ad eiusmod minim Lorem laboris. Sunt veniam magna laboris duis tempor consequat eu pariatur. Est aute do occaecat voluptate occaecat eiusmod minim fugiat excepteur tempor.
 
-<a href="./series">Choisir une série</a>
+<a href="./shows">Choisir une série</a>

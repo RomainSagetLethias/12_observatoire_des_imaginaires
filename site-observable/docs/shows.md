@@ -6,7 +6,6 @@ title: Choix d'une série télévisée
 
 ```js
 const tallyUrl = "https://tally.so/r/w48jMo";
-const shows = FileAttachment("data/shows.csv").csv({ typed: true });
 ```
 
 Entrez le nom d'une série télévisée:
@@ -16,12 +15,12 @@ const query = view(Inputs.text());
 ```
 
 ```js
-import { DuckDBClient } from "npm:@observablehq/duckdb";
-const db = DuckDBClient.of({ shows: shows });
+import { SQLiteDatabaseClient } from "npm:@observablehq/sqlite";
+const db = FileAttachment("data/shows.sqlite").sqlite();
 ```
 
 ```js
-const results = db.query(`SELECT * FROM shows WHERE shows.name ILIKE ?`, [
+const results = db.query(`SELECT * FROM shows WHERE shows.name LIKE ? COLLATE NOCASE`, [
   `${query}%`,
 ]);
 ```

@@ -6,7 +6,6 @@ title: Choix d'un film
 
 ```js
 const tallyUrl = "https://tally.so/r/wa6jyb";
-const movies = FileAttachment("data/movies.csv").csv({ typed: true });
 ```
 
 Entrez le nom d'un film:
@@ -16,13 +15,13 @@ const query = view(Inputs.text());
 ```
 
 ```js
-import { DuckDBClient } from "npm:@observablehq/duckdb";
-const db = DuckDBClient.of({ movies: movies });
+import { SQLiteDatabaseClient } from "npm:@observablehq/sqlite";
+const db = FileAttachment("data/movies.sqlite").sqlite();
 ```
 
 ```js
 const results = db.query(
-  `SELECT * FROM movies WHERE movies.title ILIKE ? ORDER BY movies.title`,
+  `SELECT * FROM movies WHERE movies.title LIKE ? COLLATE NOCASE ORDER BY movies.title`,
   [`${query}%`]
 );
 ```
