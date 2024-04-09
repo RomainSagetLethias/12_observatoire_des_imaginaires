@@ -36,7 +36,11 @@ ${results.length} films trouvés:
 if (results.length > 0) {
   results.slice(0, 20).forEach(({ id, title, original_title }) => {
     const url = `${tallyUrl}?id=${id}&original_title=${original_title}`;
-    display(html`<a href="${url}">${title}</a><br />`);
+    if (original_title.length > 0) {
+      display(html`<a href="${url}">${title} | ${original_title}</a><br />`);
+    } else {
+      display(html`<a href="${url}">${title}</a><br />`);
+    }
   });
 } else {
   display(

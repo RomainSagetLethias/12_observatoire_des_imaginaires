@@ -37,6 +37,11 @@ with tempfile.TemporaryDirectory() as temp_dir:
         ]
     ]
 
+    # Set original title to blank string if same as title
+    df["original_title"] = df["original_title"].where(
+        df["title"] != df["original_title"], ""
+    )
+
     # Save the dataframe to a SQLite database
     with tempfile.NamedTemporaryFile(suffix=".sqlite", delete=False) as temp_file:
         temp_filename = temp_file.name

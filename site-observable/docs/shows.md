@@ -38,7 +38,11 @@ if (results.length > 0) {
     .slice(0, 20)
     .forEach(({ id, name, original_name, production_countries }) => {
       const url = `${tallyUrl}?id=${id}&original_name=${original_name}`;
-      display(html`<a href="${url}"> ${name} </a><br />`);
+      if (original_name.length > 0) {
+        display(html`<a href="${url}">${name} | ${original_name}</a><br />`);
+      } else {
+        display(html`<a href="${url}">${name}</a><br />`);
+      }
     });
 } else {
   display(
