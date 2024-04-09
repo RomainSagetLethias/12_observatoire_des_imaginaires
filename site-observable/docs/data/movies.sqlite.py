@@ -34,9 +34,6 @@ with tempfile.TemporaryDirectory() as temp_dir:
             "id",
             "title",
             "original_title",
-            "production_year",
-            "production_countries",
-            "genres",
         ]
     ]
 

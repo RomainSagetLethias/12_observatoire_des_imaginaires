@@ -18,7 +18,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
     df = df[df["adult"] == False]  # noqa: E712
 
     # Select the columns we want
-    df = df[["id", "name", "original_name", "production_countries"]]
+    df = df[["id", "name", "original_name"]]
 
     # Save the dataframe to a SQLite database
     with tempfile.NamedTemporaryFile(suffix=".sqlite", delete=False) as temp_file:

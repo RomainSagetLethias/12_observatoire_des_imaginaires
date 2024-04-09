@@ -34,23 +34,10 @@ ${results.length} films trouvés:
 
 ```js
 if (results.length > 0) {
-  results
-    .slice(0, 20)
-    .forEach(
-      ({
-        id,
-        title,
-        original_title,
-        production_year,
-        production_countries,
-        genres,
-      }) => {
-        const url = `${tallyUrl}?id=${id}&original_title=${original_title}&production_year=${production_year}&production_countries=${
-          production_countries || ""
-        }&genres=${genres || ""}`;
-        display(html`<a href="${url}">${title}</a><br />`);
-      }
-    );
+  results.slice(0, 20).forEach(({ id, title, original_title }) => {
+    const url = `${tallyUrl}?id=${id}&original_title=${original_title}`;
+    display(html`<a href="${url}">${title}</a><br />`);
+  });
 } else {
   display(
     html`Désolé, ce film n'est pas répertorié dans notre base.

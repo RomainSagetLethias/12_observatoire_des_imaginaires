@@ -20,9 +20,10 @@ const db = FileAttachment("data/shows.sqlite").sqlite();
 ```
 
 ```js
-const results = db.query(`SELECT * FROM shows WHERE shows.name LIKE ? COLLATE NOCASE`, [
-  `${query}%`,
-]);
+const results = db.query(
+  `SELECT * FROM shows WHERE shows.name LIKE ? COLLATE NOCASE`,
+  [`${query}%`]
+);
 ```
 
 ```js
@@ -36,9 +37,7 @@ if (results.length > 0) {
   results
     .slice(0, 20)
     .forEach(({ id, name, original_name, production_countries }) => {
-      const url = `${tallyUrl}?id=${id}&original_name=${original_name}&production_countries=${
-        production_countries || ""
-      }`;
+      const url = `${tallyUrl}?id=${id}&original_name=${original_name}`;
       display(html`<a href="${url}"> ${name} </a><br />`);
     });
 } else {
