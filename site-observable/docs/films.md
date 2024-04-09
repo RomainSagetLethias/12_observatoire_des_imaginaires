@@ -16,12 +16,12 @@ const query = view(Inputs.text());
 
 ```js
 import { SQLiteDatabaseClient } from "npm:@observablehq/sqlite";
-const db = FileAttachment("data/movies.sqlite").sqlite();
+const db = FileAttachment("data/films.sqlite").sqlite();
 ```
 
 ```js
 const results = db.query(
-  `SELECT * FROM movies WHERE movies.title LIKE ? COLLATE NOCASE ORDER BY movies.title`,
+  `SELECT * FROM films WHERE films.title LIKE ? COLLATE NOCASE ORDER BY films.title`,
   [`${query}%`]
 );
 ```
