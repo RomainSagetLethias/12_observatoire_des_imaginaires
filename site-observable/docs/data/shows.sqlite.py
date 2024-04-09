@@ -22,7 +22,8 @@ with tempfile.TemporaryDirectory() as temp_dir:
 
     # Set original name to blank string if same as name
     df["original_name"] = df["original_name"].where(
-        df["name"] != df["original_name"], ""
+        df["name"] != df["original_name"],
+        "",
     )
 
     # Save the dataframe to a SQLite database
