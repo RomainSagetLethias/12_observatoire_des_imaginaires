@@ -20,27 +20,37 @@ const db = FileAttachment("data/shows.sqlite").sqlite();
 ```
 
 ```js
-const results = db.query(`SELECT * FROM shows WHERE shows.name LIKE ? COLLATE NOCASE`, [
-  `${query}%`,
-]);
+const results = db.query(
+  `SELECT * FROM shows WHERE shows.name LIKE ? COLLATE NOCASE`,
+  [`${query}%`]
+);
 ```
 
 ```js
 import { html } from "npm:htl";
+import Alpine from "npm:alpinejs";
+import Tooltip from "npm:@ryangjchandler/alpine-tooltip";
+
+Alpine.plugin(Tooltip);
+
+window.Alpine = Alpine;
+window.Alpine.start();
 ```
 
 ${results.length} séries trouvées:
 
 ```js
 if (results.length > 0) {
-  results
-    .slice(0, 20)
-    .forEach(({ id, name, original_name, production_countries }) => {
-      const url = `${tallyUrl}?id=${id}&original_name=${original_name}&production_countries=${
-        production_countries || ""
-      }`;
-      display(html`<a href="${url}"> ${name} </a><br />`);
-    });
+  results.slice(0, 20).forEach(({ id, name, original_name }) => {
+    const url = `${tallyUrl}?id=${id}&original_name=${original_name}`;
+    if (original_name.length > 0) {
+      display(html`<div x-data="{tooltip: '${original_name}'}">
+        <a href="${url}" x-tooltip="tooltip">${name}</a>
+      </div>`);
+    } else {
+      display(html`<a href="${url}">${name}</a><br />`);
+    }
+  });
 } else {
   display(
     html`Désolé, cette série n'est pas répertoriée dans notre base.

@@ -14,7 +14,7 @@ Officia aliquip velit fugiat aliquip commodo exercitation. Ipsum labore nostrud 
 
 Duis culpa et Lorem duis et occaecat labore id voluptate. Id nostrud fugiat laboris qui ipsum dolore ex proident culpa pariatur cupidatat ex mollit. Reprehenderit nulla mollit magna culpa id irure exercitation nisi qui. Excepteur eiusmod ex irure fugiat incididunt consectetur ipsum do in exercitation reprehenderit in deserunt. Occaecat irure ullamco eu anim exercitation id deserunt enim Lorem officia velit sit nostrud id.
 
-<a href="./movies">Choisir un film</a>
+<a href="./films">Choisir un film</a>
 
 ## Séries Récentes
 
