@@ -28,6 +28,13 @@ const results = db.query(
 
 ```js
 import { html } from "npm:htl";
+import Alpine from "npm:alpinejs";
+import Tooltip from "npm:@ryangjchandler/alpine-tooltip";
+
+Alpine.plugin(Tooltip);
+
+window.Alpine = Alpine;
+window.Alpine.start();
 ```
 
 ${results.length} films trouvés:
@@ -40,12 +47,18 @@ if (results.length > 0) {
       const url = `${tallyUrl}?id=${id}&original_title=${original_title}`;
       if (original_title.length > 0) {
         display(
-          html`<a href="${url}"
-              >${production_year} | ${title} | ${original_title}</a
-            ><br />`
+          html`<div
+            x-data="{tooltip: '${production_year} | ${original_title}'}"
+          >
+            <a href="${url}" x-tooltip="tooltip">${title}</a>
+          </div>`
         );
       } else {
-        display(html`<a href="${url}">${production_year} | ${title}</a><br />`);
+        display(
+          html`<div x-data="{tooltip: '${production_year}'}">
+            <a href="${url}" x-tooltip="tooltip">${title}</a>
+          </div>`
+        );
       }
     });
 } else {
