@@ -35,6 +35,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
             "title",
             "original_title",
             "production_year",
+            "poster_path",
         ]
     ]
 

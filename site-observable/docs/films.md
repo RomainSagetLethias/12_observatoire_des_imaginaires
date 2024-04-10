@@ -5,7 +5,9 @@ title: Choix d'un film
 # Chosir un film
 
 ```js
-const tallyUrl = "https://tally.so/r/wa6jyb";
+// Configuration
+const baseTmdbImageUrl = "https://image.tmdb.org/t/p/w92";
+const baseTallyUrl = "https://tally.so/r/wa6jyb";
 ```
 
 Entrez le nom d'un film:
@@ -43,20 +45,33 @@ ${results.length} films trouvés:
 if (results.length > 0) {
   results
     .slice(0, 20)
-    .forEach(({ id, title, original_title, production_year }) => {
-      const url = `${tallyUrl}?id=${id}&original_title=${original_title}`;
+    .forEach(({ id, title, original_title, production_year, poster_path }) => {
+      const tallyUrl = `${baseTallyUrl}?id=${id}&original_title=${original_title}`;
+      const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
       if (original_title.length > 0) {
         display(
           html`<div
             x-data="{tooltip: '${production_year} | ${original_title}'}"
+            class="card"
+            style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
           >
-            <a href="${url}" x-tooltip="tooltip">${title}</a>
+            <h2>${title}</h2>
+            <a href="${tallyUrl}" x-tooltip="tooltip"
+              ><img src="${imageUrl}"
+            /></a>
           </div>`
         );
       } else {
         display(
-          html`<div x-data="{tooltip: '${production_year}'}">
-            <a href="${url}" x-tooltip="tooltip">${title}</a>
+          html`<div
+            x-data="{tooltip: '${production_year}'}"
+            class="card"
+            style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+          >
+            <h2>${title}</h2>
+            <a href="${tallyUrl}" x-tooltip="tooltip"
+              ><img src="${imageUrl}"
+            /></a>
           </div>`
         );
       }
@@ -64,7 +79,7 @@ if (results.length > 0) {
 } else {
   display(
     html`Désolé, ce film n'est pas répertorié dans notre base.
-      <a href="${tallyUrl}">Aller au questionnaire</a>`
+      <a href="${baseTallyUrl}">Aller au questionnaire</a>`
   );
 }
 ```

@@ -18,7 +18,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
     df = df[df["adult"] == False]  # noqa: E712
 
     # Select the columns we want
-    df = df[["id", "name", "original_name"]]
+    df = df[["id", "name", "original_name", "poster_path"]]
 
     # Set original name to blank string if same as name
     df["original_name"] = df["original_name"].where(

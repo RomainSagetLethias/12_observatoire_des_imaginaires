@@ -5,7 +5,8 @@ title: Choix d'une série télévisée
 # Choisir une série télévisée
 
 ```js
-const tallyUrl = "https://tally.so/r/w48jMo";
+const baseTmdbImageUrl = "https://image.tmdb.org/t/p/w92";
+const baseTallyUrl = "https://tally.so/r/w48jMo";
 ```
 
 Entrez le nom d'une série télévisée:
@@ -41,20 +42,34 @@ ${results.length} séries trouvées:
 
 ```js
 if (results.length > 0) {
-  results.slice(0, 20).forEach(({ id, name, original_name }) => {
-    const url = `${tallyUrl}?id=${id}&original_name=${original_name}`;
+  results.slice(0, 20).forEach(({ id, name, original_name, poster_path }) => {
+    const tallyUrl = `${baseTallyUrl}?id=${id}&original_name=${original_name}`;
+    const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
     if (original_name.length > 0) {
-      display(html`<div x-data="{tooltip: '${original_name}'}">
-        <a href="${url}" x-tooltip="tooltip">${name}</a>
+      display(html`<div
+        x-data="{tooltip: '${original_name}'}"
+        class="card"
+        style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+      >
+        <h2>${name}</h2>
+        <a href="${tallyUrl}" x-tooltip="tooltip"><img src="${imageUrl}" /></a>
       </div>`);
     } else {
-      display(html`<a href="${url}">${name}</a><br />`);
+      display(
+        html`<div
+          class="card"
+          style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+        >
+          <h2>${name}</h2>
+          <a href="${tallyUrl}"><img src="${imageUrl}" /></a>
+        </div>`
+      );
     }
   });
 } else {
   display(
     html`Désolé, cette série n'est pas répertoriée dans notre base.
-      <a href="${tallyUrl}">Aller au questionnaire</a>`
+      <a href="${baseTallyUrl}">Aller au questionnaire</a>`
   );
 }
 ```
