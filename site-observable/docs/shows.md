@@ -22,7 +22,7 @@ const db = FileAttachment("data/shows.sqlite").sqlite();
 
 ```js
 const results = db.query(
-  `SELECT * FROM shows WHERE shows.name LIKE ? COLLATE NOCASE ORDER BY shows.name ASC`,
+  `SELECT *, (SELECT COUNT(*) FROM shows) total FROM shows WHERE shows.name LIKE ? COLLATE NOCASE ORDER BY shows.name ASC LIMIT 20`,
   [`${query}%`]
 );
 ```
@@ -38,7 +38,7 @@ window.Alpine = Alpine;
 window.Alpine.start();
 ```
 
-${results.length} séries trouvées:
+${results.length > 0 ? results[0].total : 0} séries trouvées:
 
 ```js
 if (results.length > 0) {
@@ -47,6 +47,16 @@ if (results.length > 0) {
       original_name || name
     }`;
     const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
+    const imageHtml = html`<div
+      style="height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
+    >
+      <object data="${imageUrl}">
+        <img
+          src="./_file/images/noun-broken-image-3237447.svg"
+          style="width:46x; height:46px"
+        />
+      </object>
+    </div>`;
     if (original_name.length > 0) {
       display(html`<div
         x-data="{tooltip: '${original_name}'}"
@@ -55,16 +65,8 @@ if (results.length > 0) {
       >
         <h2>${name}</h2>
         <a href="${tallyUrl}" x-tooltip="tooltip" style="width:92px"
-          ><div
-            style="height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
-          >
-            <object data="${imageUrl}">
-              <img
-                src="./_file/images/noun-broken-image-3237447.svg"
-                style="width:46x; height:46px"
-              />
-            </object></div
-        ></a>
+          >${imageHtml}</a
+        >
       </div>`);
     } else {
       display(
@@ -73,17 +75,7 @@ if (results.length > 0) {
           style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
         >
           <h2>${name}</h2>
-          <a href="${tallyUrl}" style="width:92px"
-            ><div
-              style="height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
-            >
-              <object data="${imageUrl}">
-                <img
-                  src="./_file/images/noun-broken-image-3237447.svg"
-                  style="width:46x; height:46px"
-                />
-              </object></div
-          ></a>
+          <a href="${tallyUrl}" style="width:92px">${imageHtml}</a>
         </div>`
       );
     }
@@ -99,5 +91,7 @@ if (results.length > 0) {
 </div>
 
 <a href="./">Retour</a>
+
+#### Crédits
 
 broken image by Rahmat Hidayat from <a href="https://thenounproject.com/browse/icons/term/broken-image/" target="_blank" title="broken image Icons">Noun Project</a> (CC BY 3.0)

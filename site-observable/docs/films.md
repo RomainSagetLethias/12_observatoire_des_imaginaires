@@ -23,7 +23,7 @@ const db = FileAttachment("data/films.sqlite").sqlite();
 
 ```js
 const results = db.query(
-  `SELECT * FROM films WHERE films.title LIKE ? COLLATE NOCASE ORDER BY films.title`,
+  `SELECT *, (SELECT COUNT(*) FROM films) total FROM films WHERE films.title LIKE ? COLLATE NOCASE ORDER BY films.title LIMIT 20`,
   [`${query}%`]
 );
 ```
@@ -39,7 +39,7 @@ window.Alpine = Alpine;
 window.Alpine.start();
 ```
 
-${results.length} films trouvés:
+${results.length > 0 ? results[0].total : 0} films trouvés:
 
 ```js
 if (results.length > 0) {
@@ -50,30 +50,37 @@ if (results.length > 0) {
         original_title || title
       }`;
       const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
+      const imageHtml = html`<div
+        style="height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
+      >
+        <object data="${imageUrl}">
+          <img
+            src="./_file/images/noun-broken-image-3237447.svg"
+            style="width:46x; height:46px"
+          />
+        </object>
+      </div>`;
       if (original_title.length > 0) {
         display(
           html`<div
-            x-data="{tooltip: '${production_year} | ${original_title}'}"
+            x-data="{tooltip: '${original_title}'}"
             class="card"
             style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
           >
             <h2>${title}</h2>
-            <a href="${tallyUrl}" x-tooltip="tooltip"
-              ><img src="${imageUrl}"
-            /></a>
+            <h3>${production_year}</h3>
+            <a href="${tallyUrl}" x-tooltip="tooltip">${imageHtml}</a>
           </div>`
         );
       } else {
         display(
           html`<div
-            x-data="{tooltip: '${production_year}'}"
             class="card"
             style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
           >
             <h2>${title}</h2>
-            <a href="${tallyUrl}" x-tooltip="tooltip"
-              ><img src="${imageUrl}"
-            /></a>
+            <h3>${production_year}</h3>
+            <a href="${tallyUrl}">${imageHtml}</a>
           </div>`
         );
       }
@@ -89,3 +96,7 @@ if (results.length > 0) {
 </div>
 
 <a href="./">Retour</a>
+
+#### Crédits
+
+broken image by Rahmat Hidayat from <a href="https://thenounproject.com/browse/icons/term/broken-image/" target="_blank" title="broken image Icons">Noun Project</a> (CC BY 3.0)
