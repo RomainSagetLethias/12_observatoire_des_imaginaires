@@ -28,6 +28,16 @@ const results = db.query(
 ```
 
 ```js
+const brokenImageAttachment = FileAttachment(
+  "images/noun-broken-image-3237447.svg"
+).image({ style: "width:46x; height:46px" });
+```
+
+```js
+const brokenImageElement = html`${brokenImageAttachment}`;
+```
+
+```js
 import { html } from "npm:htl";
 import Alpine from "npm:alpinejs";
 import Tooltip from "npm:@ryangjchandler/alpine-tooltip";
@@ -52,7 +62,7 @@ if (results.length > 0) {
     >
       <object data="${imageUrl}">
         <img
-          src="./_file/images/noun-broken-image-3237447.svg"
+          src="${brokenImageElement.currentSrc}"
           style="width:46x; height:46px"
         />
       </object>
