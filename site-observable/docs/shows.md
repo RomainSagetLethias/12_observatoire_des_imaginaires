@@ -22,7 +22,7 @@ const db = FileAttachment("data/shows.sqlite").sqlite();
 
 ```js
 const results = db.query(
-  `SELECT * FROM shows WHERE shows.name LIKE ? COLLATE NOCASE`,
+  `SELECT * FROM shows WHERE shows.name LIKE ? COLLATE NOCASE ORDER BY shows.name ASC`,
   [`${query}%`]
 );
 ```
@@ -43,7 +43,9 @@ ${results.length} séries trouvées:
 ```js
 if (results.length > 0) {
   results.slice(0, 20).forEach(({ id, name, original_name, poster_path }) => {
-    const tallyUrl = `${baseTallyUrl}?id=${id}&original_name=${original_name}`;
+    const tallyUrl = `${baseTallyUrl}?id=${id}&original_name=${
+      original_name || name
+    }`;
     const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
     if (original_name.length > 0) {
       display(html`<div
@@ -52,7 +54,17 @@ if (results.length > 0) {
         style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
       >
         <h2>${name}</h2>
-        <a href="${tallyUrl}" x-tooltip="tooltip"><img src="${imageUrl}" /></a>
+        <a href="${tallyUrl}" x-tooltip="tooltip" style="width:92px"
+          ><div
+            style="height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
+          >
+            <object data="${imageUrl}">
+              <img
+                src="./_file/images/noun-broken-image-3237447.svg"
+                style="width:46x; height:46px"
+              />
+            </object></div
+        ></a>
       </div>`);
     } else {
       display(
@@ -61,7 +73,17 @@ if (results.length > 0) {
           style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
         >
           <h2>${name}</h2>
-          <a href="${tallyUrl}"><img src="${imageUrl}" /></a>
+          <a href="${tallyUrl}" style="width:92px"
+            ><div
+              style="height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
+            >
+              <object data="${imageUrl}">
+                <img
+                  src="./_file/images/noun-broken-image-3237447.svg"
+                  style="width:46x; height:46px"
+                />
+              </object></div
+          ></a>
         </div>`
       );
     }
@@ -77,3 +99,5 @@ if (results.length > 0) {
 </div>
 
 <a href="./">Retour</a>
+
+broken image by Rahmat Hidayat from <a href="https://thenounproject.com/browse/icons/term/broken-image/" target="_blank" title="broken image Icons">Noun Project</a> (CC BY 3.0)
