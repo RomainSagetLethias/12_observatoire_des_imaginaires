@@ -26,7 +26,38 @@ with tempfile.TemporaryDirectory() as temp_dir:
     df = df[df["release_date"] < now]
 
     # Remove movies with no known revenue
-    df = df[df["revenue"] > 0]
+    # and original_language other than EU languages
+    df = df[
+        (df["revenue"] == 0)
+        & (
+            df["original_language"].isin(
+                [
+                    "cs",
+                    "da",
+                    "de",
+                    "en",
+                    "es",
+                    "et",
+                    "fi",
+                    "fr",
+                    "hr",
+                    "hu",
+                    "is",
+                    "it",
+                    "lt",
+                    "lv",
+                    "nl",
+                    "no",
+                    "pl",
+                    "pt",
+                    "ro",
+                    "sl",
+                    "sv",
+                ],
+            )
+        )
+        | (df["revenue"] > 0)
+    ]
 
     # Add a column with the production_year based on the release_date
     df["production_year"] = df["release_date"].dt.year
