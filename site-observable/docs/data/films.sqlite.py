@@ -1,7 +1,7 @@
 import os
 import sqlite3
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pandas as pd
 
@@ -18,12 +18,15 @@ with tempfile.TemporaryDirectory() as temp_dir:
     # Remove adult movies
     df = df[df["adult"] == False]  # noqa: E712
 
-    # Calculate the date for the past two years
-    years_ago = datetime.now() - timedelta(days=365 * 2)
-    start_date = years_ago.replace(month=1, day=1)
+    # Remove documentaries
+    df = df[df["genres"].str.contains("Documentary") == False]  # noqa: E712
 
-    # Filter the dataframe based on the start date
-    df = df[df["release_date"] >= start_date]
+    # Remove movies with a future release date
+    now = datetime.now()
+    df = df[df["release_date"] < now]
+
+    # Remove movies with no known revenue
+    df = df[df["revenue"] > 0]
 
     # Add a column with the production_year based on the release_date
     df["production_year"] = df["release_date"].dt.year
