@@ -23,8 +23,20 @@ const db = FileAttachment("data/films.sqlite").sqlite();
 
 ```js
 const results = db.query(
-  `SELECT *, (SELECT COUNT(*) FROM films) total FROM films WHERE films.title LIKE ? COLLATE NOCASE ORDER BY films.title LIMIT 20`,
-  [`${query}%`]
+  `
+  SELECT
+    *,
+    (SELECT COUNT(*) FROM films) total
+  FROM
+    films
+  WHERE
+    films.title LIKE ? COLLATE NOCASE
+    OR films.original_title LIKE ? COLLATE NOCASE
+  ORDER BY
+    films.title
+  LIMIT
+    20`,
+  [`%${query}%`, `%${query}%`]
 );
 ```
 
