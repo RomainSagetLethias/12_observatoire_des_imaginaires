@@ -64,7 +64,7 @@ ${results.length > 0 ? results[0].total : 0} séries trouvées:
 ```js
 if (results.length > 0) {
   results.slice(0, 20).forEach(({ id, name, original_name, poster_path }) => {
-    const tallyUrl = `${baseTallyUrl}?id=${id}&original_name=${
+    const tallyUrl = `${baseTallyUrl}?id_tmdb=${id}&name=${name}&original_name=${
       original_name || name
     }`;
     const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
