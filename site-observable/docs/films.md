@@ -84,9 +84,13 @@ const content =
             return html`<div
               x-data="{tooltip: '${original_title}'}"
               class="card"
-              style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"
             >
-              <h2>${title}</h2>
+              <h2
+                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+              >
+                ${title}
+              </h2>
               <h3>${production_year}</h3>
               <a href="${tallyUrl}" x-tooltip="tooltip">${imageHtml}</a>
             </div>`;
@@ -95,7 +99,11 @@ const content =
               class="card"
               style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
             >
-              <h2>${title}</h2>
+              <h2
+                style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"
+              >
+                ${title}
+              </h2>
               <h3>${production_year}</h3>
               <a href="${tallyUrl}">${imageHtml}</a>
             </div>`;

@@ -83,7 +83,11 @@ const content =
             class="card"
             style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
           >
-            <h2>${name}</h2>
+            <h2
+              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"
+            >
+              ${name}
+            </h2>
             <a href="${tallyUrl}" x-tooltip="tooltip" style="width:92px"
               >${imageHtml}</a
             >
@@ -93,7 +97,11 @@ const content =
             class="card"
             style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
           >
-            <h2>${name}</h2>
+            <h2
+              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"
+            >
+              ${name}
+            </h2>
             <a href="${tallyUrl}" style="width:92px">${imageHtml}</a>
           </div>`;
         }
