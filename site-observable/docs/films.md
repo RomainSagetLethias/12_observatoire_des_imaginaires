@@ -68,9 +68,9 @@ if (results.length > 0) {
   results
     .slice(0, 20)
     .forEach(({ id, title, original_title, production_year, poster_path }) => {
-      const tallyUrl = `${baseTallyUrl}?id_tmdb=${id}&title=${title}&original_title=${
-        original_title || title
-      }`;
+      const tallyUrl = `${baseTallyUrl}?id_tmdb=${id}&title=${encodeURIComponent(
+        title
+      )}&original_title=${encodeURIComponent(original_title || title)}`;
       const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
       const imageHtml = html`<div
         style="width: 92px; height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
