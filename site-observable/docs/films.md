@@ -35,7 +35,7 @@ const results = db.query(
   ORDER BY
     films.title
   LIMIT
-    20`,
+    200`,
   [`%${query}%`, `%${query}%`]
 );
 ```
@@ -61,61 +61,53 @@ window.Alpine = Alpine;
 window.Alpine.start();
 ```
 
-${results.length > 0 ? results[0].total : 0} films trouvés:
-
 ```js
-if (results.length > 0) {
-  results
-    .slice(0, 20)
-    .forEach(({ id, title, original_title, production_year, poster_path }) => {
-      const tallyUrl = `${baseTallyUrl}?id_tmdb=${id}&title=${encodeURIComponent(
-        title
-      )}&original_title=${encodeURIComponent(original_title || title)}`;
-      const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
-      const imageHtml = html`<div
-        style="width: 92px; height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
-      >
-        <object data="${imageUrl}">
-          <img
-            src="${brokenImageElement.currentSrc}"
-            style="width:46x; height:46px"
-          />
-        </object>
-      </div>`;
-      if (original_title.length > 0) {
-        display(
-          html`<div
-            x-data="{tooltip: '${original_title}'}"
-            class="card"
-            style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+const content =
+  results.length > 0
+    ? results.map(
+        ({ id, title, original_title, production_year, poster_path }) => {
+          const tallyUrl = `${baseTallyUrl}?id_tmdb=${id}&title=${encodeURIComponent(
+            title
+          )}&original_title=${encodeURIComponent(original_title || title)}`;
+          const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
+          const imageHtml = html`<div
+            style="width: 92px; height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
           >
-            <h2>${title}</h2>
-            <h3>${production_year}</h3>
-            <a href="${tallyUrl}" x-tooltip="tooltip">${imageHtml}</a>
-          </div>`
-        );
-      } else {
-        display(
-          html`<div
-            class="card"
-            style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
-          >
-            <h2>${title}</h2>
-            <h3>${production_year}</h3>
-            <a href="${tallyUrl}">${imageHtml}</a>
-          </div>`
-        );
-      }
-    });
-} else {
-  display(
-    html`Désolé, ce film n'est pas répertorié dans notre base.
-      <a href="${baseTallyUrl}">Aller au questionnaire</a>`
-  );
-}
+            <object data="${imageUrl}">
+              <img
+                src="${brokenImageElement.currentSrc}"
+                style="width:46x; height:46px"
+              />
+            </object>
+          </div>`;
+          if (original_title.length > 0) {
+            return html`<div
+              x-data="{tooltip: '${original_title}'}"
+              class="card"
+              style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+            >
+              <h2>${title}</h2>
+              <h3>${production_year}</h3>
+              <a href="${tallyUrl}" x-tooltip="tooltip">${imageHtml}</a>
+            </div>`;
+          } else {
+            return html`<div
+              class="card"
+              style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+            >
+              <h2>${title}</h2>
+              <h3>${production_year}</h3>
+              <a href="${tallyUrl}">${imageHtml}</a>
+            </div>`;
+          }
+        }
+      )
+    : "";
 ```
 
-</div>
+${display(html`<div class="grid grid-cols-4">${content}</div>`)}
+
+Je n'ai pas trouvé le film recherché, ${html`<a href="${baseTallyUrl}">Aller au questionnaire</a>`}
 
 <a href="./">Retour</a>
 

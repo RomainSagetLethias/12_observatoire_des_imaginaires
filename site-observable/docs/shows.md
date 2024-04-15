@@ -98,8 +98,7 @@ const content =
           </div>`;
         }
       })
-    : `Désolé, cette série n'est pas répertoriée dans notre base.
-      <a href="${baseTallyUrl}">Aller au questionnaire</a>`;
+    : "";
 ```
 
 ${display(html`<div class="grid grid-cols-4">${content}</div>`)}
