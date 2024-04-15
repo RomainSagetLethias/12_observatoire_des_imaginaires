@@ -6,7 +6,7 @@ title: Choix d'une série télévisée
 
 ```js
 const baseTmdbImageUrl = "https://image.tmdb.org/t/p/w92";
-const baseTallyUrl = "https://tally.so/r/w48jMo";
+const baseTallyUrl = "https://tally.so/r/nP6KOB";
 ```
 
 Entrez le nom d'une série télévisée:
