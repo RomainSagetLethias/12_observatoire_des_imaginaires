@@ -33,7 +33,7 @@ const results = db.query(
     shows.original_name LIKE ? COLLATE NOCASE
   ORDER BY
     shows.name ASC
-  LIMIT 20`,
+  LIMIT 200`,
   [`%${query}%`, `%${query}%`]
 );
 ```
@@ -59,57 +59,62 @@ window.Alpine = Alpine;
 window.Alpine.start();
 ```
 
-${results.length > 0 ? results[0].total : 0} séries trouvées:
-
 ```js
-if (results.length > 0) {
-  results.slice(0, 20).forEach(({ id, name, original_name, poster_path }) => {
-    const tallyUrl = `${baseTallyUrl}?id=${id}&original_name=${
-      original_name || name
-    }`;
-    const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
-    const imageHtml = html`<div
-      style="height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
-    >
-      <object data="${imageUrl}">
-        <img
-          src="${brokenImageElement.currentSrc}"
-          style="width:46x; height:46px"
-        />
-      </object>
-    </div>`;
-    if (original_name.length > 0) {
-      display(html`<div
-        x-data="{tooltip: '${original_name}'}"
-        class="card"
-        style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
-      >
-        <h2>${name}</h2>
-        <a href="${tallyUrl}" x-tooltip="tooltip" style="width:92px"
-          >${imageHtml}</a
+const content =
+  results.length > 0
+    ? results.map(({ id, name, original_name, poster_path }) => {
+        const tallyUrl = `${baseTallyUrl}?id_tmdb=${id}&name=${encodeURIComponent(
+          name
+        )}&original_name=${encodeURIComponent(original_name || name)}`;
+        const imageUrl = `${baseTmdbImageUrl}${poster_path}`;
+        const imageHtml = html`<div
+          style="height:138px; background-color:white; display:flex; align-items:center; justify-content: center;"
         >
-      </div>`);
-    } else {
-      display(
-        html`<div
-          class="card"
-          style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
-        >
-          <h2>${name}</h2>
-          <a href="${tallyUrl}" style="width:92px">${imageHtml}</a>
-        </div>`
-      );
-    }
-  });
-} else {
-  display(
-    html`Désolé, cette série n'est pas répertoriée dans notre base.
-      <a href="${baseTallyUrl}">Aller au questionnaire</a>`
-  );
-}
+          <object data="${imageUrl}">
+            <img
+              src="${brokenImageElement.currentSrc}"
+              style="width:46x; height:46px"
+            />
+          </object>
+        </div>`;
+        if (original_name.length > 0) {
+          return html`<div
+            x-data="{tooltip: '${original_name}'}"
+            class="card"
+            style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+          >
+            <h2
+              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"
+            >
+              ${name}
+            </h2>
+            <a href="${tallyUrl}" x-tooltip="tooltip" style="width:92px"
+              >${imageHtml}</a
+            >
+          </div>`;
+        } else {
+          return html`<div
+            x-data="{tooltip: '${name}'}"
+            class="card"
+            style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+          >
+            <h2
+              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"
+            >
+              ${name}
+            </h2>
+            <a href="${tallyUrl}" x-tooltip="tooltip" style="width:92px"
+              >${imageHtml}</a
+            >
+          </div>`;
+        }
+      })
+    : "";
 ```
 
-</div>
+${display(html`<div class="grid grid-cols-4">${content}</div>`)}
+
+Je n'ai pas trouvé la série recherchée, ${html`<a href="${baseTallyUrl}">Aller au questionnaire</a>`}
 
 <a href="./">Retour</a>
 
