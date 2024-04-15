@@ -82,7 +82,7 @@ const content =
           </div>`;
           if (original_title.length > 0) {
             return html`<div
-              x-data="{tooltip: '${original_title}'}"
+              x-data="{tooltip: '${original_title.replace(/'/g, "\\'")}'}"
               class="card"
               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;"
             >
@@ -96,7 +96,7 @@ const content =
             </div>`;
           } else {
             return html`<div
-              x-data="{tooltip: '${title}'}"
+              x-data="{tooltip: '${title.replace(/'/g, "\\'")}'}"
               class="card"
               style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
             >

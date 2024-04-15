@@ -79,7 +79,7 @@ const content =
         </div>`;
         if (original_name.length > 0) {
           return html`<div
-            x-data="{tooltip: '${original_name}'}"
+            x-data="{tooltip: '${original_name.replace(/'/g, "\\'")}'}"
             class="card"
             style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
           >
@@ -94,7 +94,7 @@ const content =
           </div>`;
         } else {
           return html`<div
-            x-data="{tooltip: '${name}'}"
+            x-data="{tooltip: '${name.replace(/'/g, "\\'")}'}"
             class="card"
             style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
           >
