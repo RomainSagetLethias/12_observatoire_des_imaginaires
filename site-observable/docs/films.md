@@ -10,10 +10,14 @@ const baseTmdbImageUrl = "https://image.tmdb.org/t/p/w92";
 const baseTallyUrl = "https://tally.so/r/w2e0PD";
 ```
 
+```js
+import { debounce } from "./utils/debounce.js";
+```
+
 Entrez le nom d'un film:
 
 ```js
-const query = view(Inputs.text());
+const query = view(debounce(Inputs.text(), 250));
 ```
 
 ```js

@@ -9,10 +9,14 @@ const baseTmdbImageUrl = "https://image.tmdb.org/t/p/w92";
 const baseTallyUrl = "https://tally.so/r/nP6KOB";
 ```
 
+```js
+import { debounce } from "./utils/debounce.js";
+```
+
 Entrez le nom d'une série télévisée:
 
 ```js
-const query = view(Inputs.text());
+const query = view(debounce(Inputs.text(), 250));
 ```
 
 ```js
