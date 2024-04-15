@@ -7,7 +7,7 @@ title: Choix d'un film
 ```js
 // Configuration
 const baseTmdbImageUrl = "https://image.tmdb.org/t/p/w92";
-const baseTallyUrl = "https://tally.so/r/wa6jyb";
+const baseTallyUrl = "https://tally.so/r/w2e0PD";
 ```
 
 Entrez le nom d'un film:
