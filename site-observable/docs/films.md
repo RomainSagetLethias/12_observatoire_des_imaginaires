@@ -96,6 +96,7 @@ const content =
             </div>`;
           } else {
             return html`<div
+              x-data="{tooltip: '${title}'}"
               class="card"
               style="max-width:220px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
             >
@@ -105,7 +106,7 @@ const content =
                 ${title}
               </h2>
               <h3>${production_year}</h3>
-              <a href="${tallyUrl}">${imageHtml}</a>
+              <a href="${tallyUrl}" x-tooltip="tooltip">${imageHtml}</a>
             </div>`;
           }
         }
