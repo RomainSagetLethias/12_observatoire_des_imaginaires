@@ -12,11 +12,16 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-numpy = "^1.21.1"
-pandas = "^1.1.1"
-jupyter = "^1.0.0"
-ipykernel = "^5.3.4"
+# numpy = "^1.21.1"
+# pandas = "^1.1.1"
+# jupyter = "^1.0.0"
+# ipykernel = "^5.3.4"
+pandas = "^2.2.0"
 kaggle = "^1.6.6"
+plotly = "^5.20.0"
+streamlit = "^1.33.0"
+matplotlib = "^3.8.4"
+ruff = "^0.3.7"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^2.20.0"
