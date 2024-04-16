@@ -1,6 +1,5 @@
 """
-# My first app with Streamlit https://streamlit.io/
-Here's our first attempt at using data to create a table:
+# Application pour l'Observateur des Imaginaires
 """
 
 
@@ -33,6 +32,7 @@ def load_data(file: str) -> pd.DataFrame:
 
 
 # Load the data
+# TODO connect to Google Sheet and load data 
 file_path = "../data/AnalyseReponsesTreatedData.csv"  #'../data/Analyse réponses.xlsx - Treated data.csv'  # noqa: E501
 # ne pas lire la première ligne
 data = load_data(file_path)
@@ -59,9 +59,7 @@ with st.sidebar:
     st.title("Fait par la dream team _Analyse de données_")
     st.write(
         (
-            "Cette application analyse les données du PoC. On peut se faire plaisir"
-            " en y ajoutant tous les graphiques nécessaires. "
-            "Le code est à nettoyer pour une meilleure maintenance ;-) "
+            "Cette application analyse les données du sondage de **l'Observatoire des Imaginaires**. "
         ),
     )
 
@@ -159,7 +157,7 @@ titles_more_than_once = titles_more_than_once[titles_more_than_once["compte"] > 
 # Affichage d'un bar chart horizontal
 
 with st.container(border=True):
-    st.header("Films les plus fréquents")
+    st.header("Productions les plus fréquentes")
     col_freq_film_select, col_freq_film_vide, col_freq_film_graph = st.columns(
         [2, 0.5, 5],
     )
@@ -221,7 +219,7 @@ with st.container(border=True):
 
         st.markdown(
             (
-                f"Les contenus datent d`une période qui s`étend de {date_min}"
+                f"Les contenus datent d'une période qui s'étend de {date_min}"
                 f" à {date_max}. {date_value_pareto}% des contenus sont postérieurs à"
                 f" {date_pareto}."
             ),
@@ -352,3 +350,157 @@ st.dataframe(
 # 				 y=country_group_df.nb_titre)])
 #
 # 		with colinfofilm.expander("Table de données"):
+
+
+###  TODO Analyse de l’échantillon
+
+# Questions
+# Quels sont les sous-échantillons statistiquement représentatifs qui peuvent être analysés ?
+
+# Visualisations
+# Nombre de films uniques
+# Nombre, titre et fréquence des contenus non-uniques
+# Répartition des nationalités
+# Répartition des producteurs
+# Répartition des années de sortie
+# Répartition des canaux de diffusion
+# Répartition des genres (uniques)
+# Répartition des producteurs
+# Nombre de films pour chaque type de récompense documentées (Césars, Cannes, Oscars…) / par année de sortie
+# Année de sortie en fonction de nationalité
+# Genres en fonction de l’année de sortie
+# Genres en fonction de la nationalité
+# Nationalité en fonction du canal de diffusion
+# Genre en fonction du canal de diffusion
+# Année en fonction du canal de diffusion
+
+# TODO Analyse des doublons
+# Pour chaque contenu présents plusieurs fois:
+# visualisation de toutes les réponses divergentes
+# visualisation des personnages à la même désignation (nom ou nom d’acteur) et des réponses divergentes pour les mêmes personnages
+
+
+# TODO Analyse de l’arène
+
+# Questions
+# Où se passent les récits ? 
+# Est-ce que le lieu du récit est corrélé avec la nationalité du film ?
+# Dans quels types de société se déroulent nos récits (réalité vs fantaisie, dystopie vs utopies…) ? Y a t-il une influence du genre ?
+# À quelle époque se passent les récits ? Quelle est la proportion de récits qui ne se déroulent pas à l’époque de leur écriture ? Comment est-ce influencé par leur genre ?
+# Est-ce que ces tendances évoluent au cours du temps ?
+
+# Visualisations
+# Répartitions:
+# Pays de l’action
+# Nombre de pays par film (1, 2 …)
+# Environnement de l’action
+# Époque de l’action
+# Temporalité de l’action (i.e. temps de l’action par rapport à époque d’écriture du récit)
+# Type de société
+# Type de mondes
+# Corrélations : 
+# Pays de l’action vs pays de production
+# Type de monde vs année de production
+# Type de monde vs genre
+# Type de monde vs nationalité du film
+# Type de monde vs canal de diffusion
+# Type de société vs année de production
+# Type de société vs genre
+# Type de société vs nationalité du film
+# Type de société vs canal de diffusion
+# Temporalité du récit vs genre
+# Temporalité du récit vs année de production
+# Temporalité du récit vs canal de diffusion
+# Temporalité du récit vs type de monde
+# Temporalité du récit vs type de société
+# Nombre de pays de l’action vs genre
+
+
+# TODO Analyse des personnages renseignés
+
+# Questions: 
+# Quelles sont les caractéristiques des personnages ? Qui sont-ils ? Comment vivent-ils ? Quelle est l’influence des caractéristiques du film sur les caractéristiques des personnages ?
+
+# Visualisations:
+# Nombre total de personnages renseignés 
+# Nombre moyen de personnages par film
+# En cas de contenus identiques, identification des désignations identiques et comparaison des divergences dans les répon
+# Répartitions:
+# Tranches d’âges
+# Genre
+# Ethnicités
+# Gentil ou méchant
+# Principal ou secondaire
+# Corrélations:
+# Possibilité de corréler chacun des 5 paramètres au 4 autres (genre vs âge etc.)
+# Possibilité de corréler chacun des 5 paramètres à nationalité du film / date du film / producteur / genre du film
+
+# TODO Analyse des caractéristiques écologiques des personnages
+
+# Questions
+# Les personnages de fiction présentent-ils des traits de caractères écologiques ? si oui, qui sont ces personnages ? Est-ce que c’est influencé par les caractéristiques du film (nationalité …) ? Est-ce que ça évolue dans le temps ?
+
+# Visualisations
+# Répartition des réponses à la sensibilité écologique du personnage
+# Corrélation entre la sensibilité écologique et les caractéristiques du personnage (genre / ethnicité /  âge / gentil-méchant / principal-secondaire)
+# Corrélation entre la présence de personnage ayant une sensibilité écolo et les caractéristiques du film (année / nationalité / genre / producteur / canal de diffusion)
+
+# TODO Analyse de la mobilité à l’écran
+
+# Questions
+# Comment se déplace-t-on à l’écran ? Est-ce qu’il y a une corrélation entre 
+# Visualisation de la proportion de modes de transport représentés à l’écran. Filtres possibles sur les caractéristiques du contenu (ex. que les films français) ou sur la nature des personnages (ex. tranches d’âge).
+# Objectif: répondre aux questions suivantes:
+# Comment se déplace-t-on à l’écran ?
+# Est-ce que ça varie selon le type de personnage et leur sensibilité à l’écologie ?
+
+# TODO Analyse de l’habitat
+# Visualisation générale des modes d’habitat à l’écran, avec filtres possibles sur les types de contenu ou sur les caractéristiques des personnages (ex. comment habitent les jeunes ? comment habitent les CSP+ ?). Importance corréler l’habitat à l’emploi exercé (i.e. la catégorie socio-professionnelle).
+# Corrélation entre les lieux de vie et les lieux de l’action (dans la catégorie arène). Question posée : les “aventures” se passent-elles forcément loin du lieu de vie des personnages ? Regarder notamment l’influence du genre et l’influence de la nationalité du film
+
+# TODO Analyse de l’emploi
+# Visualisation des emplois représentés à l’écran selon le type de contenu.
+# Intéressant de regarder qui pratique quel type d’emploi (femmes vs hommes, jeunes…)
+# Corrélation entre le métier pratiqué et la sensibilité du personnage à l’écologie
+
+# TODO Analyse de la technologie
+# Visualisation de l’emploi de la technologie à l’écran selon le type de film (regarder en particulier le genre) et le type de personnage (corréler en particulier à l’âge). Question sous-jacente : comment utilise-t-on la technologie à l’écran ? est-ce systématique ? est-ce corrélé à une certaine forme de réalité des usages ?
+
+# TODO Analyse des modes de vie
+
+
+# TODO L’écologie dans le récit
+
+# TODO 
+# Pédagogie?
+# Cartographie des contenus qui mentionnent un enjeu écologique et corrélation à leurs caractéristiques (nationalité etc.). Est-ce que ça a évolué au cours du temps ? Est-ce que certains genres s’y prêtent  plus que d’autres ? Quand l’écologie est mentionnée, de quel type de récit s’agit-il ? (dystopie, récit futuriste…)
+# Adéquation entre le score calculé et le score proposé par les répondants
+# Enjeux écologiques les plus fréquemment montrés / les plus ignorés
+# Box office / récompenses obtenues par les films qui parlent d’écologie ou qui ont des scores écologiques élevées (question : ces films sont-ils vus ?)
+# A l’inverse, quels scores écologiques pour les films les plus vus au box office ? 
+
+# Pédagogie clandestine ?
+# Visualisation et statistiques sur les comportements listés, avec filtres possibles sur la nature des contenus.
+# Corrélation au score écologique proposé par les répondants, la question étant : les spectateurs font-ils le lien entre certains comportements montrés à l’écran et l’impact écologique d’un contenu ? 
+
+# Personnage écolo vs récit écolo
+
+
+# La biodiversité à l’écran
+
+
+# La perception des répondants
+
+
+# Influence des caractéristiques des répondants
+
+
+# La perception des répondants
+# Quels types de contenus remportent les meilleurs scores?
+# Quels types de contenus remportent les moins bons scores?
+
+# L’influence du profil des répondants
+# Sur les scores fournis 
+# Sur le nombre de réponses type “je ne sais pas / je ne me souviens plus”
+
+
