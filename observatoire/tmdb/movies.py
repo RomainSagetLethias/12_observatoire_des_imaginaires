@@ -13,14 +13,17 @@ import requests
 import tqdm
 
 from observatoire.tmdb.config import TMDB_API_KEY, TMDB_MAX_RETRIES
-from observatoire.tmdb.setup import JSON_SAVE_FILE_PATH, OUTPUT_FOLDER, SAVED_MOVIE_TRACKER_PATH
+from observatoire.tmdb.setup import (
+    DATA_FILE,
+    JSON_SAVE_FILE_PATH,
+    OUTPUT_FOLDER,
+    SAVED_MOVIE_TRACKER_PATH,
+)
 
 # variable to store the number of movies collected
 movies_collected = 0
 lock = threading.Lock()
-dataset_df = pd.read_csv(
-    "site-observable/docs/.observablehq/cache/data/movies.csv",
-)
+dataset_df = pd.read_parquet(DATA_FILE) if Path.exists(DATA_FILE) else None
 full_log = False  # Mark True to log everything
 
 # Create a logger for the current module
@@ -74,7 +77,10 @@ def get_latest() -> int:
 # Get last movie ID from the saved movie tracker file
 
 
-def get_oldest() -> int:
+def get_oldest() -> int | None:
+    if dataset_df is None:
+        return None
+
     # Get the 'id' value of the last row in the sorted DataFrame
     dataset_df.sort_values(["id"], inplace=True)
     last_id = dataset_df.iloc[-1]["id"]
@@ -87,6 +93,7 @@ def get_oldest() -> int:
 
 def delete_old_files(logger: logging) -> None:
     logger.info("Deleting Old temp files")
+
     try:
         # Get a list of files from the last run in the output folder
         files_from_last_run = os.listdir(OUTPUT_FOLDER)
@@ -470,7 +477,7 @@ def merger(logger: logging) -> pd.DataFrame:
     df.replace({"Not Available": pd.NA, "1500-01-01": pd.NA, None: pd.NA}, inplace=True)
 
     # Concatenate the current dataset_df with the new df to merge the data
-    merged_df = pd.concat([dataset_df, df])
+    merged_df = pd.concat([dataset_df, df]) if dataset_df is not None else df
     sorted_df = merged_df.sort_values("vote_count", ascending=False)
 
     return sorted_df
@@ -490,7 +497,7 @@ def executor() -> pd.DataFrame | None:
     oldest = get_oldest()
 
     # Generate a list of movie IDs
-    movie_ids_list = list(range(oldest, latest))
+    movie_ids_list = list(range(oldest or 0, latest))
     total_movies_to_process = len(movie_ids_list)
 
     logger.info(f"Total Movies to Process in this run: {total_movies_to_process}")
@@ -498,7 +505,7 @@ def executor() -> pd.DataFrame | None:
 
     with (
         tqdm(total=total_movies_to_process, unit=" movies") as pbar,
-        concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor,
+        concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor,
     ):
         futures = []
         for movie in movie_ids_list:
