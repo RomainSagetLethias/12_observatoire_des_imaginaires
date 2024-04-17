@@ -11,6 +11,7 @@ from observatoire.tmdb.config import TMDB_API_KEY, TMDB_MAX_RETRIES
 from observatoire.tmdb.helpers import parse_keywords
 
 lock = threading.Lock()
+FULL_LOG = False  # Mark True to log everything
 
 
 def get_latest_movie_id() -> int:
@@ -79,9 +80,8 @@ def get_movie_data(
     movie_id: int,
     logger: logging,
     pbar: tqdm,
-    full_log: bool,
 ) -> None:
-    if full_log:
+    if FULL_LOG:
         logger.info(f"Processing {movie_id}")
 
     with lock:
@@ -113,11 +113,11 @@ def get_movie_data(
             rqst_json["keywords"] = keywords
             movie_json.append(json.dumps(rqst_json))
 
-            if full_log:
+            if FULL_LOG:
                 logger.info(f"movies collected: {len(movie_json)}")
 
     except Exception:
         logger.exception(f"Expection for {movie_id} in process_movie_ids")
 
-    if full_log:
+    if FULL_LOG:
         logger.info(f"Completed movie {movie_id}")
