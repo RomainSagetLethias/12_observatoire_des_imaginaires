@@ -31,4 +31,12 @@ def merge(df_current: pd.DataFrame | None, df_latest: pd.DataFrame, logger: logg
     merged_df = pd.concat([df_current, df_latest]) if df_current is not None else df_latest
     merged_df.reset_index(drop=True, inplace=True)
 
+    # sort by id column
+    merged_df.sort_values(by="id", inplace=True)
+
+    # Drop unnecessary columns
+    merged_df = merged_df.drop(
+        columns=[col for col in merged_df.columns if col.startswith("__")],
+    )
+
     return merged_df

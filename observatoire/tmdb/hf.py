@@ -4,9 +4,14 @@ from datasets import Dataset, DatasetDict, load_dataset
 
 def load_movies_dataset() -> pd.DataFrame | None:
     try:
-        data = load_dataset("DataForGood/observatoire_des_imaginaires_movies", split="train")
+        dataset = load_dataset(
+            "DataForGood/observatoire_des_imaginaires_movies",
+            split="train",
+        )
+        dataset.cleanup_cache_files()
+
         # Load dataset into Pandas DataFrame
-        df = data.to_pandas()
+        df = dataset.to_pandas()
     except Exception:
         df = None
 
