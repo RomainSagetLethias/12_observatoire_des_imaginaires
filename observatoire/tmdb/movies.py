@@ -5,7 +5,6 @@ import logging
 import os
 import threading
 import time
-from datetime import UTC, datetime
 from http import HTTPStatus
 from pathlib import Path
 
@@ -14,29 +13,7 @@ import requests
 import tqdm
 
 from observatoire.tmdb.config import TMDB_API_KEY, TMDB_MAX_RETRIES
-
-# Get current working directory
-cwd = Path.cwd()
-
-# Define folder paths
-data_folder = Path(cwd) / ".tmdb_cache"
-archive_folder = Path(data_folder) / "archive"
-output_folder = Path(data_folder) / "output"
-log_file_path = Path(data_folder) / "logs"
-saved_movie_tracker_path = Path(archive_folder) / "completed_movie_ids.txt"
-
-# Create necessary folders if they don't exist
-Path.mkdir(data_folder, exist_ok=True, parents=True)
-Path.mkdir(output_folder, exist_ok=True, parents=True)
-Path.mkdir(log_file_path, exist_ok=True, parents=True)
-Path.mkdir(archive_folder, exist_ok=True, parents=True)
-
-# Get current date
-date_today = datetime.now(UTC).date()
-date_today_str = str(date_today)
-
-# Create file path for saving json file
-json_save_file_path = Path(archive_folder) / f"{date_today_str}_TMDB_movies.ndjson"
+from observatoire.tmdb.setup import JSON_SAVE_FILE_PATH, OUTPUT_FOLDER, SAVED_MOVIE_TRACKER_PATH
 
 # variable to store the number of movies collected
 movies_collected = 0
@@ -112,12 +89,12 @@ def delete_old_files(logger: logging) -> None:
     logger.info("Deleting Old temp files")
     try:
         # Get a list of files from the last run in the output folder
-        files_from_last_run = os.listdir(output_folder)
+        files_from_last_run = os.listdir(OUTPUT_FOLDER)
 
         # delete old temp files
         if len(files_from_last_run) > 0:
             for file in files_from_last_run:
-                full_file_path = Path(output_folder) / file
+                full_file_path = Path(OUTPUT_FOLDER) / file
                 Path.unlink(full_file_path)
     except Exception:
         logger.exception("Error when deleting old temp files")
@@ -182,7 +159,7 @@ def process_movie_ids(movie_id: int, logger: logging, pbar: tqdm) -> None:
         logger.info(f"Processing {movie_id}")
 
     # output file path for the current movie
-    output_file = Path(output_folder) / f"scrapeTMDB_movies_{movie_id}.ndjson"
+    output_file = Path(OUTPUT_FOLDER) / f"scrapeTMDB_movies_{movie_id}.ndjson"
     with lock:
         pbar.update(1)
 
@@ -219,7 +196,7 @@ def process_movie_ids(movie_id: int, logger: logging, pbar: tqdm) -> None:
             with lock:
                 movies_collected += 1
                 with Path.open(
-                    saved_movie_tracker_path,
+                    SAVED_MOVIE_TRACKER_PATH,
                     "a",
                     encoding="utf-8",
                 ) as completed_movie_id_file:
@@ -240,13 +217,13 @@ def process_movie_ids(movie_id: int, logger: logging, pbar: tqdm) -> None:
 
 def combine_threads(logger: logging) -> None:
     logger.info("Starting to combine threads")
-    thread_dir = output_folder
+    thread_dir = OUTPUT_FOLDER
 
     count = 0
     file_names = os.listdir(thread_dir)
 
     # open the save file
-    with Path.open(json_save_file_path, "a", encoding="utf-8") as append_file:
+    with Path.open(JSON_SAVE_FILE_PATH, "a", encoding="utf-8") as append_file:
         for file in file_names:
             read_file_path = Path(thread_dir) / file
             with Path.open(read_file_path, encoding="utf-8") as read_file:
@@ -273,7 +250,7 @@ def load_json_data() -> list[dict]:  # noqa: C901, PLR0915
     unique_ids = set()
 
     # load the data
-    with Path.open(json_save_file_path, encoding="utf-8") as input_file:
+    with Path.open(JSON_SAVE_FILE_PATH, encoding="utf-8") as input_file:
         variations_to_ignore = [
             None,
             "",
