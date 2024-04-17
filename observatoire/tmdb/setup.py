@@ -6,7 +6,6 @@ cwd = Path.cwd()
 
 # Define folder paths
 DATA_FOLDER = Path(cwd) / ".tmdb_cache"
-DATA_FILE = Path(DATA_FOLDER) / "tmdb_movies.parquet"
 ARCHIVE_FOLDER = Path(DATA_FOLDER) / "archive"
 OUTPUT_FOLDER = Path(DATA_FOLDER) / "output"
 LOG_FILE_PATH = Path(DATA_FOLDER) / "logs"

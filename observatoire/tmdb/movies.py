@@ -13,8 +13,8 @@ import requests
 from tqdm import tqdm
 
 from observatoire.tmdb.config import TMDB_API_KEY, TMDB_MAX_RETRIES
+from observatoire.tmdb.hf import load_movies_dataset, save_movies_dataset
 from observatoire.tmdb.setup import (
-    DATA_FILE,
     JSON_SAVE_FILE_PATH,
     OUTPUT_FOLDER,
     SAVED_MOVIE_TRACKER_PATH,
@@ -23,7 +23,8 @@ from observatoire.tmdb.setup import (
 # variable to store the number of movies collected
 movies_collected = 0
 lock = threading.Lock()
-dataset_df = pd.read_parquet(DATA_FILE) if Path.exists(DATA_FILE) else None
+
+dataset_df = load_movies_dataset()
 full_log = False  # Mark True to log everything
 
 # Create a logger for the current module
@@ -476,7 +477,8 @@ def merger(logger: logging) -> pd.DataFrame:
     merged_df = pd.concat([dataset_df, df]) if dataset_df is not None else df
     sorted_df = merged_df.sort_values("vote_count", ascending=False)
 
-    sorted_df.to_parquet(DATA_FILE)
+    # Update the movies.parquet file on the Hugging Face Hub
+    save_movies_dataset(sorted_df)
 
     return sorted_df
 
@@ -495,7 +497,7 @@ def executor() -> pd.DataFrame | None:
     oldest = get_oldest()
 
     # Generate a list of movie IDs
-    movie_ids_list = list(range(oldest or 1, latest))
+    movie_ids_list = list(range(oldest or 1, latest))[:10]
     total_movies_to_process = len(movie_ids_list)
 
     logger.info(f"Total Movies to Process in this run: {total_movies_to_process}")
