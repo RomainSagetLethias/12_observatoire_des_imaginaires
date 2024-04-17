@@ -1,7 +1,5 @@
 import logging
 
-# Create a logger for the current module
-
 
 def setup_logger() -> logging:
     # Create a logger for the current module

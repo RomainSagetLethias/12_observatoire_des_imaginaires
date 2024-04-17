@@ -7,7 +7,7 @@ from tqdm import tqdm
 from observatoire.tmdb.data import transform_movie_json
 from observatoire.tmdb.helpers import merge
 from observatoire.tmdb.hf import load_movies_dataset, save_movies_dataset
-from observatoire.tmdb.logging import setup_logger
+from observatoire.tmdb.logger import setup_logger
 from observatoire.tmdb.tmdb import get_latest_movie_id, get_movie_data
 
 
