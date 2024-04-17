@@ -29,6 +29,6 @@ def merge(df_current: pd.DataFrame | None, df_latest: pd.DataFrame, logger: logg
 
     # Concatenate the current dataset_df with the new df to merge the data
     merged_df = pd.concat([df_current, df_latest]) if df_current is not None else df_latest
-    sorted_df = merged_df.sort_values("vote_count", ascending=False)
+    merged_df.reset_index(drop=True, inplace=True)
 
-    return sorted_df
+    return merged_df
