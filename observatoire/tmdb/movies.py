@@ -13,15 +13,15 @@ import pandas as pd
 import requests
 import tqdm
 
-from . import TMDB_API_KEY, TMDB_MAX_RETRIES
+from observatoire.tmdb.config import TMDB_API_KEY, TMDB_MAX_RETRIES
 
 # Get current working directory
 cwd = Path.cwd()
 
 # Define folder paths
-data_folder = Path(cwd) / "TMDB_movie_data"
-archive_folder = Path(data_folder) / "TMDB_archive"
-output_folder = Path(data_folder) / "temp_movies"
+data_folder = Path(cwd) / ".tmdb_cache"
+archive_folder = Path(data_folder) / "archive"
+output_folder = Path(data_folder) / "output"
 log_file_path = Path(data_folder) / "logs"
 saved_movie_tracker_path = Path(archive_folder) / "completed_movie_ids.txt"
 
@@ -547,3 +547,7 @@ def executor() -> pd.DataFrame | None:
     logger.info("Completed Executor")
 
     return df
+
+
+if __name__ == "__main__":
+    executor()
