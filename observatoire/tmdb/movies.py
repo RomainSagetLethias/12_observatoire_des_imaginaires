@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 import requests
-import tqdm
+from tqdm import tqdm
 
 from observatoire.tmdb.config import TMDB_API_KEY, TMDB_MAX_RETRIES
 from observatoire.tmdb.setup import (
@@ -81,11 +81,7 @@ def get_oldest() -> int | None:
     if dataset_df is None:
         return None
 
-    # Get the 'id' value of the last row in the sorted DataFrame
-    dataset_df.sort_values(["id"], inplace=True)
-    last_id = dataset_df.iloc[-1]["id"]
-
-    return last_id
+    return dataset_df["id"].max()
 
 
 # Delete old temp files
@@ -166,13 +162,13 @@ def process_movie_ids(movie_id: int, logger: logging, pbar: tqdm) -> None:
         logger.info(f"Processing {movie_id}")
 
     # output file path for the current movie
-    output_file = Path(OUTPUT_FOLDER) / f"scrapeTMDB_movies_{movie_id}.ndjson"
+    output_file = Path(OUTPUT_FOLDER) / f"movie_{movie_id}.ndjson"
     with lock:
         pbar.update(1)
 
     try:
         time.sleep(0.2)
-        url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US"
+        url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=fr-FR&region=FR"
         headers = {
             "accept": "application/json",
             "Authorization": f"Bearer {TMDB_API_KEY}",
@@ -480,6 +476,8 @@ def merger(logger: logging) -> pd.DataFrame:
     merged_df = pd.concat([dataset_df, df]) if dataset_df is not None else df
     sorted_df = merged_df.sort_values("vote_count", ascending=False)
 
+    sorted_df.to_parquet(DATA_FILE)
+
     return sorted_df
 
 
@@ -497,7 +495,7 @@ def executor() -> pd.DataFrame | None:
     oldest = get_oldest()
 
     # Generate a list of movie IDs
-    movie_ids_list = list(range(oldest or 0, latest))
+    movie_ids_list = list(range(oldest or 1, latest))
     total_movies_to_process = len(movie_ids_list)
 
     logger.info(f"Total Movies to Process in this run: {total_movies_to_process}")
@@ -505,7 +503,9 @@ def executor() -> pd.DataFrame | None:
 
     with (
         tqdm(total=total_movies_to_process, unit=" movies") as pbar,
-        concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor,
+        concurrent.futures.ThreadPoolExecutor(
+            max_workers=int(os.cpu_count() * 0.8),
+        ) as executor,
     ):
         futures = []
         for movie in movie_ids_list:

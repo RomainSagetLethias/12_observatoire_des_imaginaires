@@ -6,7 +6,7 @@ cwd = Path.cwd()
 
 # Define folder paths
 DATA_FOLDER = Path(cwd) / ".tmdb_cache"
-DATA_FILE = Path(DATA_FOLDER) / "tmdb_data.parquet"
+DATA_FILE = Path(DATA_FOLDER) / "tmdb_movies.parquet"
 ARCHIVE_FOLDER = Path(DATA_FOLDER) / "archive"
 OUTPUT_FOLDER = Path(DATA_FOLDER) / "output"
 LOG_FILE_PATH = Path(DATA_FOLDER) / "logs"
@@ -22,4 +22,4 @@ Path.mkdir(ARCHIVE_FOLDER, exist_ok=True, parents=True)
 now = datetime.now(UTC).date()
 
 # Create file path for saving json file
-JSON_SAVE_FILE_PATH = Path(ARCHIVE_FOLDER) / f"{now}_TMDB_movies.ndjson"
+JSON_SAVE_FILE_PATH = Path(ARCHIVE_FOLDER) / f"{now}_tmdb_movies.ndjson"
