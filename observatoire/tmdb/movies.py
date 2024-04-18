@@ -23,38 +23,49 @@ def executor() -> None:
     current_id = df_current["id"].max() if df_current is not None else None
 
     # Generate a list of movie IDs
-    movie_ids_list = list(range(current_id or 1, latest_id))[:10]
+    movie_ids_list = list(range(current_id or 1, latest_id))
     total_movies_to_process = len(movie_ids_list)
 
     logger.info(f"Total Movies to Process in this run: {total_movies_to_process}")
 
-    with (
-        tqdm(total=total_movies_to_process, unit=" movies") as pbar,
-        concurrent.futures.ThreadPoolExecutor(
-            max_workers=int(os.cpu_count() * 0.8),
-        ) as executor,
-    ):
-        futures = []
-        movie_json = []
-        for movie in movie_ids_list:
-            futures.append(executor.submit(get_movie_data, movie_json, movie, logger, pbar))
+    # Split movie_ids_list into chunks of 100
+    batches = [movie_ids_list[i : i + 100] for i in range(0, len(movie_ids_list), 100)]
 
-        for future in concurrent.futures.as_completed(futures):
-            with contextlib.suppress(Exception):
-                _ = future.result()
+    with tqdm(total=total_movies_to_process, unit=" movies") as pbar:
+        for batch in batches:
+            logger.info(f"Processing batch of {len(batch)} movies")
 
-    # merge today's data with the old dataset
-    try:
-        # Load and format the json data
-        df_latest = transform_movie_json(movie_json)
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=int(os.cpu_count() * 0.8),
+            ) as executor:
+                futures = []
+                movie_json = []
+                for movie in batch:
+                    futures.append(
+                        executor.submit(get_movie_data, movie_json, movie, logger, pbar),
+                    )
 
-        df_merged = merge(df_current, df_latest, logger)
+                for future in concurrent.futures.as_completed(futures):
+                    with contextlib.suppress(Exception):
+                        _ = future.result()
 
-        # Update the movies dataset on the Hugging Face Hub
-        save_movies_dataset(df_merged)
-    except Exception as error:
-        logger.critical(f"Error when merging dataframes {error}")
-        return
+            # merge today's data with the old dataset
+            try:
+                # Load and format the json data
+                df_latest = transform_movie_json(movie_json)
+
+                df_merged = merge(df_current, df_latest, logger)
+
+                # Update the movies dataset on the Hugging Face Hub
+                logger.info("Will update dataset on Hugging Face Hub")
+                save_movies_dataset(df_merged)
+
+            except Exception as error:
+                logger.critical(f"Error when merging dataframes {error}")
+                return
+
+            # Reload updated dataset
+            df_current = load_movies_dataset()
 
     logger.info("Completed Executor")
 
