@@ -27,15 +27,20 @@ st.set_page_config(
 
 @st.cache_data  # 👈 Add the caching decorator
 def load_data(file: str) -> pd.DataFrame:
-    df = pd.read_csv(file, skiprows=1)
+    df = pd.read_csv(file)
     return df
 
 
 # Load the data
 # TODO connect to Google Sheet and load data 
-file_path = "../data/AnalyseReponsesTreatedData.csv"  #'../data/Analyse réponses.xlsx - Treated data.csv'  # noqa: E501
+file_path = "../data/Etape 1 Identification du film - Feuille 1.csv"  
 # ne pas lire la première ligne
 data = load_data(file_path)
+
+# Renommer les noms de colonnes (utile si le fichier d'entrée change de noms de colonnes)
+# Renommer la colonne
+data.rename(columns={'title': 'TITRE'}, inplace=True)
+
 
 
 # if 'df' not in st.session_state:
@@ -98,235 +103,244 @@ df_truncated = df.iloc[::4]
 # mettre les titres en majuscule
 df_truncated["TITRE"] = df_truncated["TITRE"].str.upper()
 # mettre les pays en majuscule et supprimer les espaces au début et à la fin
-df_truncated["PAYS"] = df_truncated["PAYS"].str.strip().str.upper()
-df_truncated["PAYS"] = df_truncated["PAYS"].apply(lambda p: p.replace(" ET ", ";"))
-df_truncated.insert(
-    3,
-    "pays_rework",
-    [
-        pays if len(pays.split(";")) == 1 else "INTERNATIONAL"
-        for pays in df_truncated["PAYS"]
-    ],
-)
+
+# TODO    ------    reprendre ce code quand les données sont enrichies avec les informations du film
+
+
+# df_truncated["PAYS"] = df_truncated["PAYS"].str.strip().str.upper()
+# df_truncated["PAYS"] = df_truncated["PAYS"].apply(lambda p: p.replace(" ET ", ";"))
+# df_truncated.insert(
+#     3,
+#     "pays_rework",
+#     [
+#         pays if len(pays.split(";")) == 1 else "INTERNATIONAL"
+#         for pays in df_truncated["PAYS"]
+#     ],
+# )
 
 ### Convertir les types de données correctement ici
 # Convertir les années en entier
-annee = "ANNEE"
-df_truncated[annee] = (
-    pd.to_numeric(df_truncated[annee], errors="coerce").fillna(0).astype(int)
-)
+# annee = "ANNEE"
+# df_truncated[annee] = (
+#     pd.to_numeric(df_truncated[annee], errors="coerce").fillna(0).astype(int)
+# ) 
 
-with cont_metric:
-    with st.expander("Aperçu des donnéess"):
-        st.dataframe(df_truncated)
 
-    ### A. Affichage des métriques macro
-    col_nb_livre, col_nb_editeur, col_nb_prem_roman = st.columns([2, 2, 2])
-    with col_nb_livre:
-        # Metric nb Ouvrages
-        st.metric(label="Oeuvres analysées", value=len(set(df_truncated["TITRE"])))
-    with col_nb_editeur:
-        # Metric nb Editeurs
-        st.metric(
-            label="Films",
-            value=len(set(df_truncated[df_truncated.TYPE == "FILM"]["TITRE"])),
-        )
-    with col_nb_prem_roman:
-        # Metric Premier Roman
-        st.metric(
-            label="Séries",
-            value=len(set(df_truncated[df_truncated.TYPE == "SÉRIE"]["TITRE"])),
-        )
+# with cont_metric:
+#     with st.expander("Aperçu des donnéess"):
+#         st.dataframe(df_truncated)
 
-    st.write()
-    st.write(
-        f":blue[{round(100*len(set(df_truncated[df_truncated.TYPE == 'FILM']['TITRE']))/len(set(df_truncated['TITRE'])),2)}%] des contenus renseignés sont des films vs :blue[{round(100*len(set(df_truncated[df_truncated.TYPE == 'SÉRIE']['TITRE']))/len(set(df_truncated['TITRE'])),2)}%] des séries.",  # noqa: E501
-    )
+#     ### A. Affichage des métriques macro
+#     col_nb_livre, col_nb_editeur, col_nb_prem_roman = st.columns([2, 2, 2])
+#     with col_nb_livre:
+#         # Metric nb Ouvrages
+#         st.metric(label="Oeuvres analysées", value=len(set(df_truncated["TITRE"])))
+#     with col_nb_editeur:
+#         # Metric nb Editeurs
+#         st.metric(
+#             label="Films",
+#             value=len(set(df_truncated[df_truncated.TYPE == "FILM"]["TITRE"])),
+#         )
+#     with col_nb_prem_roman:
+#         # Metric Premier Roman
+#         st.metric(
+#             label="Séries",
+#             value=len(set(df_truncated[df_truncated.TYPE == "SÉRIE"]["TITRE"])),
+#         )
+
+#     st.write()
+#     st.write(
+#         f":blue[{round(100*len(set(df_truncated[df_truncated.TYPE == 'FILM']['TITRE']))/len(set(df_truncated['TITRE'])),2)}%] des contenus renseignés sont des films vs :blue[{round(100*len(set(df_truncated[df_truncated.TYPE == 'SÉRIE']['TITRE']))/len(set(df_truncated['TITRE'])),2)}%] des séries.",  # noqa: E501
+#     )
 
 # Trouver les titres qui apparaissent plus de 4 fois dans la colonne "TITRE"
 # (car chaque titre a 4 lignes, une pour chaque personnage)
 
 
-titles_more_than_once = (
-    df_truncated.groupby(["TITRE", "TYPE"]).agg(compte=("TITRE", "count")).reset_index()
-)
-titles_more_than_once = titles_more_than_once[titles_more_than_once["compte"] > 1]
+# titles_more_than_once = (
+#     df_truncated.groupby(["TITRE", "TYPE"]).agg(compte=("TITRE", "count")).reset_index()
+# )
+# titles_more_than_once = titles_more_than_once[titles_more_than_once["compte"] > 1]
 
 
 # Afficher un bar chart des titres les plus fréquents
 # Affichage d'un bar chart horizontal
 
-with st.container(border=True):
-    st.header("Productions les plus fréquentes")
-    col_freq_film_select, col_freq_film_vide, col_freq_film_graph = st.columns(
-        [2, 0.5, 5],
-    )
-    with col_freq_film_select:
-        type_choice = st.selectbox(
-            "Choisir un type",
-            titles_more_than_once["TYPE"].unique(),
-            index=None,
-        )
-    with col_freq_film_graph:
-        if type_choice == "FILM":
-            t = titles_more_than_once.loc[
-                titles_more_than_once["TYPE"] == "FILM"
-            ].sort_values(
-                by="compte",
-                ascending=True,
-            )
-        elif type_choice == "SÉRIE":
-            t = titles_more_than_once.loc[
-                titles_more_than_once["TYPE"] == "SÉRIE"
-            ].sort_values(
-                by="compte",
-                ascending=True,
-            )
-        else:
-            t = titles_more_than_once.sort_values(by="compte", ascending=True)
 
-        st.bar_chart(t, x="TITRE", y="compte")
+# with st.container(border=True):
+#     st.header("Productions les plus fréquentes")
+#     col_freq_film_select, col_freq_film_vide, col_freq_film_graph = st.columns(
+#         [2, 0.5, 5],
+#     )
+#     with col_freq_film_select:
+#         type_choice = st.selectbox(
+#             "Choisir un type",
+#             titles_more_than_once["TYPE"].unique(),
+#             index=None,
+#         )
+#     with col_freq_film_graph:
+#         if type_choice == "FILM":
+#             t = titles_more_than_once.loc[
+#                 titles_more_than_once["TYPE"] == "FILM"
+#             ].sort_values(
+#                 by="compte",
+#                 ascending=True,
+#             )
+#         elif type_choice == "SÉRIE":
+#             t = titles_more_than_once.loc[
+#                 titles_more_than_once["TYPE"] == "SÉRIE"
+#             ].sort_values(
+#                 by="compte",
+#                 ascending=True,
+#             )
+#         else:
+#             t = titles_more_than_once.sort_values(by="compte", ascending=True)
 
-# Types de contenus et pays d'origine
-with st.container(border=True):
-    st.header("Types de contenus")
-    col_contenu_date, col_contenu_vide, col_contenu_graph = st.columns([4, 0.5, 4])
+#         st.bar_chart(t, x="TITRE", y="compte")
 
-    with col_contenu_date:
-        date_group_df = (
-            df_truncated.groupby("ANNEE")
-            .count()
-            .reset_index()[["ANNEE", "TITRE"]]
-            .rename(columns={"TITRE": "nb_titre"})
-        )
-        date_group_df["periode_percent"] = 100 * (
-            1 - (date_group_df.nb_titre.cumsum() / date_group_df.nb_titre.sum())
-        )
+# # Types de contenus et pays d'origine
+# with st.container(border=True):
+#     st.header("Types de contenus")
+#     col_contenu_date, col_contenu_vide, col_contenu_graph = st.columns([4, 0.5, 4])
 
-        date_min = str(df_truncated.ANNEE.min())
-        date_max = str(df_truncated.ANNEE.max())
-        date_pareto = (
-            date_group_df[date_group_df["periode_percent"] <= 80]["ANNEE"].min()  # noqa: PLR2004
-        )
-        date_value_pareto = int(
-            round(
-                date_group_df[date_group_df["periode_percent"] <= 80][  # noqa: PLR2004
-                    "periode_percent"
-                ].max(),
-                0,
-            ),
-        )
+#     with col_contenu_date:
+#         date_group_df = (
+#             df_truncated.groupby("ANNEE")
+#             .count()
+#             .reset_index()[["ANNEE", "TITRE"]]
+#             .rename(columns={"TITRE": "nb_titre"})
+#         )
+#         date_group_df["periode_percent"] = 100 * (
+#             1 - (date_group_df.nb_titre.cumsum() / date_group_df.nb_titre.sum())
+#         )
 
-        st.markdown(
-            (
-                f"Les contenus datent d'une période qui s'étend de {date_min}"
-                f" à {date_max}. {date_value_pareto}% des contenus sont postérieurs à"
-                f" {date_pareto}."
-            ),
-        )
+#         date_min = str(df_truncated.ANNEE.min())
+#         date_max = str(df_truncated.ANNEE.max())
+#         date_pareto = (
+#             date_group_df[date_group_df["periode_percent"] <= 80]["ANNEE"].min()  # noqa: PLR2004
+#         )
+#         date_value_pareto = int(
+#             round(
+#                 date_group_df[date_group_df["periode_percent"] <= 80][  # noqa: PLR2004
+#                     "periode_percent"
+#                 ].max(),
+#                 0,
+#             ),
+#         )
 
-        st.bar_chart(date_group_df, x="ANNEE", y="nb_titre")
+#         st.markdown(
+#             (
+#                 f"Les contenus datent d'une période qui s'étend de {date_min}"
+#                 f" à {date_max}. {date_value_pareto}% des contenus sont postérieurs à"
+#                 f" {date_pareto}."
+#             ),
+#         )
 
-    with col_contenu_graph:
-        country_group_df = df_truncated
-        country_group_df = (
-            country_group_df.groupby("pays_rework")
-            .count()
-            .reset_index()[["pays_rework", "TITRE"]]
-            .rename(columns={"TITRE": "nb_titre"})
-            .sort_values("nb_titre")
-        )
-        country_group_df["country_percent_cumul"] = round(
-            100
-            * (
-                1
-                - (country_group_df.nb_titre.cumsum() / country_group_df.nb_titre.sum())
-            ),
-            0,
-        )
-        country_group_df["country_percent"] = round(
-            100 * (country_group_df.nb_titre / country_group_df.nb_titre.sum()),
-            2,
-        )
+#         st.bar_chart(date_group_df, x="ANNEE", y="nb_titre")
 
-        country_value_pareto = int(
-            round(
-                country_group_df[country_group_df["country_percent"] >= 10][  # noqa: PLR2004
-                    "country_percent"
-                ].sum(),
-                2,
-            ),
-        )
-        country_group_df_pareto = country_group_df[
-            country_group_df["country_percent"] >= 10  # noqa: PLR2004
-        ][["pays_rework", "country_percent"]].sort_values(
-            "country_percent",
-            ascending=False,
-        )
+#     with col_contenu_graph:
+#         country_group_df = df_truncated
+#         country_group_df = (
+#             country_group_df.groupby("pays_rework")
+#             .count()
+#             .reset_index()[["pays_rework", "TITRE"]]
+#             .rename(columns={"TITRE": "nb_titre"})
+#             .sort_values("nb_titre")
+#         )
+#         country_group_df["country_percent_cumul"] = round(
+#             100
+#             * (
+#                 1
+#                 - (country_group_df.nb_titre.cumsum() / country_group_df.nb_titre.sum())
+#             ),
+#             0,
+#         )
+#         country_group_df["country_percent"] = round(
+#             100 * (country_group_df.nb_titre / country_group_df.nb_titre.sum()),
+#             2,
+#         )
 
-        st.write(
-            f"A **:blue[{country_value_pareto}%]**, les 2 principaux pays dont les contenus sont les plus visionnés sont : {country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['pays_rework'][0].capitalize()} ({country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['country_percent'][0]}%) et {country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['pays_rework'][1].capitalize()} ({country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['country_percent'][1]}%).",  # noqa: E501
-        )
+#         country_value_pareto = int(
+#             round(
+#                 country_group_df[country_group_df["country_percent"] >= 10][  # noqa: PLR2004
+#                     "country_percent"
+#                 ].sum(),
+#                 2,
+#             ),
+#         )
+#         country_group_df_pareto = country_group_df[
+#             country_group_df["country_percent"] >= 10  # noqa: PLR2004
+#         ][["pays_rework", "country_percent"]].sort_values(
+#             "country_percent",
+#             ascending=False,
+#         )
 
-        fig_type = px.bar(
-            country_group_df,
-            y="pays_rework",
-            x="nb_titre",
-            orientation="h",
-            text_auto=True,
-        )
-        st.plotly_chart(fig_type, use_container_width=True)
+#         st.write(
+#             f"A **:blue[{country_value_pareto}%]**, les 2 principaux pays dont les contenus sont les plus visionnés sont : {country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['pays_rework'][0].capitalize()} ({country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['country_percent'][0]}%) et {country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['pays_rework'][1].capitalize()} ({country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['country_percent'][1]}%).",  # noqa: E501
+#         )
 
-# LIEUX VISIONNAGE
-with st.container(border=True):
-    canal_group_df = (
-        df_truncated.groupby("CANAL")
-        .count()[["TITRE"]]
-        .rename(columns={"TITRE": "nb_titre"})
-        .sort_values("nb_titre", ascending=False)
-    )
-    canal_group_df["canal_percent"] = 100 * (
-        canal_group_df.nb_titre / canal_group_df.nb_titre.sum()
-    )
-    canal_country_group_df = (
-        df_truncated.groupby(["CANAL", "pays_rework"])
-        .count()[["TITRE"]]
-        .rename(columns={"TITRE": "nb_titre"})
-        .sort_values("nb_titre", ascending=False)
-        .reset_index()
-    )
+#         fig_type = px.bar(
+#             country_group_df,
+#             y="pays_rework",
+#             x="nb_titre",
+#             orientation="h",
+#             text_auto=True,
+#         )
+#         st.plotly_chart(fig_type, use_container_width=True)
 
-    col_text_canal, col_table_canal = st.columns([5, 3])
-    with col_text_canal:
-        canal_visionne1 = canal_group_df.nb_titre.nlargest(2).reset_index()["CANAL"][0]
-        percent_canal_visionne1 = round(canal_group_df.canal_percent.nlargest(2)[0], 2)
-        canal_visionne2 = canal_group_df.nb_titre.nlargest(2).reset_index()["CANAL"][1]
-        percent_canal_visionne2 = round(canal_group_df.canal_percent.nlargest(2)[1], 2)
+# # LIEUX VISIONNAGE
+# with st.container(border=True):
+#     canal_group_df = (
+#         df_truncated.groupby("CANAL")
+#         .count()[["TITRE"]]
+#         .rename(columns={"TITRE": "nb_titre"})
+#         .sort_values("nb_titre", ascending=False)
+#     )
+#     canal_group_df["canal_percent"] = 100 * (
+#         canal_group_df.nb_titre / canal_group_df.nb_titre.sum()
+#     )
+#     canal_country_group_df = (
+#         df_truncated.groupby(["CANAL", "pays_rework"])
+#         .count()[["TITRE"]]
+#         .rename(columns={"TITRE": "nb_titre"})
+#         .sort_values("nb_titre", ascending=False)
+#         .reset_index()
+#     )
 
-        st.markdown(
-            f"Les contenus sont visionnés principalement sur :blue[{canal_visionne1.capitalize()}] (:blue[{percent_canal_visionne1}%]) et :blue[{canal_visionne2.capitalize()}] (:blue[{percent_canal_visionne2}%]).\n\n La majorité des contenus visionnés sur :blue[{canal_visionne1.capitalize()}] ont pour pays d'origine :blue[{canal_country_group_df[canal_country_group_df['CANAL']==canal_visionne1].nlargest(1,'nb_titre').reset_index()['pays_rework'][0]}] (:blue[%]), alors que la majorité des contenus français sont visionnés xxx (xxx%).\n\n :blue[{round(canal_group_df.loc['Autre','canal_percent'],2)}%] des contenus sont visionnés sur un canal `Autre` que la liste proposée (cf ci-contre)",  # noqa: E501
-        )
+#     col_text_canal, col_table_canal = st.columns([5, 3])
+#     with col_text_canal:
+#         canal_visionne1 = canal_group_df.nb_titre.nlargest(2).reset_index()["CANAL"][0]
+#         percent_canal_visionne1 = round(canal_group_df.canal_percent.nlargest(2)[0], 2)
+#         canal_visionne2 = canal_group_df.nb_titre.nlargest(2).reset_index()["CANAL"][1]
+#         percent_canal_visionne2 = round(canal_group_df.canal_percent.nlargest(2)[1], 2)
 
-        # Les contenus sont visionnés principalement sur Netflix (29.91%) ou dans
-        # une salle de cinéma (28.97%). La majorité des contenus américains sont
-        # visionnés sur Netflix (40.48% des contenus US), alors que la majorité
-        # des contenus français sont visionnés au cinéma (44.19%).
-    # 23.36% des contenus sont visionnés sur un canal `autre`
-    # que la liste proposée (cf ci-dessous)
+#         st.markdown(
+#             f"Les contenus sont visionnés principalement sur :blue[{canal_visionne1.capitalize()}] (:blue[{percent_canal_visionne1}%]) et :blue[{canal_visionne2.capitalize()}] (:blue[{percent_canal_visionne2}%]).\n\n La majorité des contenus visionnés sur :blue[{canal_visionne1.capitalize()}] ont pour pays d'origine :blue[{canal_country_group_df[canal_country_group_df['CANAL']==canal_visionne1].nlargest(1,'nb_titre').reset_index()['pays_rework'][0]}] (:blue[%]), alors que la majorité des contenus français sont visionnés xxx (xxx%).\n\n :blue[{round(canal_group_df.loc['Autre','canal_percent'],2)}%] des contenus sont visionnés sur un canal `Autre` que la liste proposée (cf ci-contre)",  # noqa: E501
+#         )
 
-    with col_table_canal:
-        st.markdown(set(canal_group_df.reset_index().CANAL))
+#         # Les contenus sont visionnés principalement sur Netflix (29.91%) ou dans
+#         # une salle de cinéma (28.97%). La majorité des contenus américains sont
+#         # visionnés sur Netflix (40.48% des contenus US), alors que la majorité
+#         # des contenus français sont visionnés au cinéma (44.19%).
+#     # 23.36% des contenus sont visionnés sur un canal `autre`
+#     # que la liste proposée (cf ci-dessous)
 
-st.subheader("EPOQUE DE RECITS")
-st.write(set(df_truncated["EPOQUE DU RECIT"]))
+#     with col_table_canal:
+#         st.markdown(set(canal_group_df.reset_index().CANAL))
 
-st.subheader("TYPE DE MONDE")
-st.write(set(df_truncated["TYPE DE MONDE"]))
-st.dataframe(
-    df_truncated[["TITRE", "TRAITEMENT DU RECIT", "TYPE DE MONDE"]]
-    .groupby(["TRAITEMENT DU RECIT", "TYPE DE MONDE"])
-    .count(),
-)
+# st.subheader("EPOQUE DE RECITS")
+# st.write(set(df_truncated["EPOQUE DU RECIT"]))
+
+# st.subheader("TYPE DE MONDE")
+# st.write(set(df_truncated["TYPE DE MONDE"]))
+# st.dataframe(
+#     df_truncated[["TITRE", "TRAITEMENT DU RECIT", "TYPE DE MONDE"]]
+#     .groupby(["TRAITEMENT DU RECIT", "TYPE DE MONDE"])
+#     .count(),
+# )
+
+
+# TODO   FIN  ------    reprendre ce code quand les données sont enrichies avec les informations du film
 
 #
 # 				with st.container():
