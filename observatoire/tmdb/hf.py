@@ -19,6 +19,6 @@ def load_movies_dataset() -> pd.DataFrame | None:
 
 
 def save_movies_dataset(df: pd.DataFrame) -> None:
-    dataset = Dataset.from_pandas(df)
+    dataset = Dataset.from_pandas(df, preserve_index=False)
     dataset_dict = DatasetDict({"train": dataset})
     dataset_dict.push_to_hub("DataForGood/observatoire_des_imaginaires_movies")
