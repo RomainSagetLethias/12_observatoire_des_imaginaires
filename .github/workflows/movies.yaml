@@ -2,7 +2,7 @@ name: Update Movies Dataset
 
 on:
   # Run this workflow once per day, at 0:15 UTC
-  schedule: [{ cron: "15 0 * * *" }]
+  # schedule: [{ cron: "15 0 * * *" }]
   # Run this workflow when triggered manually in GitHub’s UI.
   workflow_dispatch: {}
 
@@ -25,4 +25,4 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           # TMDB credentials
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-          TMDB_MAX_RETRIES: ${{ secrets.TMDB_MAX_RETRIES }}
+          TMDB_MAX_RETRIES: 500
