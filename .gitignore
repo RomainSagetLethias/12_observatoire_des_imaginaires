@@ -163,6 +163,3 @@ cython_debug/
 .ruff_cache
 .DS_Store
 data/
-
-# Ignore TMDB data cache
-.tmdb_cache/
