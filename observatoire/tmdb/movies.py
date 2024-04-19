@@ -4,6 +4,7 @@ import os
 
 from tqdm import tqdm
 
+from observatoire.tmdb.config import TMDB_BATCH_SIZE
 from observatoire.tmdb.data import transform_movie_json
 from observatoire.tmdb.helpers import merge
 from observatoire.tmdb.hf import load_movies_dataset, save_movies_dataset
@@ -28,8 +29,11 @@ def executor() -> None:
 
     logger.info(f"Total Movies to Process in this run: {total_movies_to_process}")
 
-    # Split movie_ids_list into chunks of 100
-    batches = [movie_ids_list[i : i + 100] for i in range(0, len(movie_ids_list), 100)]
+    # Split movie_ids_list into chunks of TMDB_BATCH_SIZE
+    batches = [
+        movie_ids_list[i : i + TMDB_BATCH_SIZE]
+        for i in range(0, len(movie_ids_list), TMDB_BATCH_SIZE)
+    ]
 
     with tqdm(total=total_movies_to_process, unit=" movies") as pbar:
         for batch in batches:
