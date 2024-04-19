@@ -1,5 +1,6 @@
 ---
 title: Choix d'un film
+toc: false
 ---
 
 # Chosir un film
