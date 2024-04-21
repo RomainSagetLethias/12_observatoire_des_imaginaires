@@ -33,7 +33,7 @@ def load_data(file: str) -> pd.DataFrame:
 
 
 # Load the data
-file_path = "../data/AnalyseReponsesTreatedData.csv"  #'../data/Analyse réponses.xlsx - Treated data.csv'  # noqa: E501
+file_path = "https://raw.githubusercontent.com/dataforgoodfr/12_observatoire_des_imaginaires/streamlit/poc_v1/data/AnalyseReponsesTreatedData.csv"  #'../data/Analyse réponses.xlsx - Treated data.csv'  # noqa: E501
 # ne pas lire la première ligne
 data = load_data(file_path)
 
