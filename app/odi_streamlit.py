@@ -33,14 +33,13 @@ def load_data(file: str) -> pd.DataFrame:
 
 # Load the data
 # TODO connect to Google Sheet and load data 
-file_path = "../data/Etape 1 Identification du film - Feuille 1.csv"  
+file_path = "data/Etape 1 Identification du film - Feuille 1.csv"  
 # ne pas lire la première ligne
 data = load_data(file_path)
 
 # Renommer les noms de colonnes (utile si le fichier d'entrée change de noms de colonnes)
 # Renommer la colonne
 data.rename(columns={'title': 'TITRE'}, inplace=True)
-
 
 
 # if 'df' not in st.session_state:
@@ -96,13 +95,14 @@ df = data[~data["TITRE"].str.contains(r"Contenu \d+", na=False)].dropna(how="all
 
 # ne conserver qu'une ligne sur 4  (ce qui revient à supprimer
 # les informations des personnages 2, 3, 4 quand ils existent)
-df_truncated = df.iloc[::4]
+##df_truncated = df.iloc[::4]
 
 # Nettoyage du data set
 
 # mettre les titres en majuscule
-df_truncated["TITRE"] = df_truncated["TITRE"].str.upper()
+df["TITRE"] = df["TITRE"].str.upper()
 # mettre les pays en majuscule et supprimer les espaces au début et à la fin
+st.dataframe(df)
 
 # TODO    ------    reprendre ce code quand les données sont enrichies avec les informations du film
 
