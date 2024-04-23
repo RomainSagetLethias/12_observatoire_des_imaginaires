@@ -68,8 +68,8 @@ def executor() -> None:
                 logger.critical(f"Error when merging dataframes {error}")
                 return
 
-            # Reload updated dataset
-            df_current = load_movies_dataset()
+            # Continue with current dataframe
+            df_current = df_merged
 
     logger.info("Completed Executor")
 
