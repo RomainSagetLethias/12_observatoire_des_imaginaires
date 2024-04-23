@@ -91,6 +91,7 @@ cont_metric = st.container(border=True)  # border = True
 # Supprimer les lignes où la première colonne contient "Contenu XXX"
 # XXX est un nombre
 # Et Supprimer les lignes où toutes les valeurs sont NaN
+# TODO est-ce encore utile ? 
 df = data[~data["TITRE"].str.contains(r"Contenu \d+", na=False)].dropna(how="all")
 
 # ne conserver qu'une ligne sur 4  (ce qui revient à supprimer
@@ -365,6 +366,88 @@ st.dataframe(df)
 #
 # 		with colinfofilm.expander("Table de données"):
 
+def prepare_technology_data(data, colname_id):
+    """
+    Extracts and prepares technology-related data for analysis from multiple characters.
+    
+    Parameters:
+        data (DataFrame): The original dataset containing technology tools and demographic information for characters.
+        colname_id (String): Part of the column name for which we want to do the analysis, e.g. 'gender'.
+    
+    Returns:
+        DataFrame: A long-format DataFrame ready for analysis and visualization.
+    """
+    # Technology tools as described in the dataset
+    tech_tools_suffix = [
+        'Smartphone', 'Ordinateur', 'TV', 'Tablette', 'Console de jeux', 
+        'Objets connectés', 'Robotique', 'Autre'
+    ]
+
+
+    # Prepare and concatenate data for all characters with accurate column names
+    all_characters_data = pd.DataFrame()
+
+    # Loop through each character number
+    for i in range(1, 5):
+        # Prepare the mapping for each character's technology columns using the correct format
+        colnames = {
+            f"character{i}_technology_tools [{tool}]": tool for tool in tech_tools_suffix
+        }
+        colnames[f"character{i}_" + colname_id] = colname_id
+        
+        # Select and rename the relevant columns for each character
+        temp_data = data[list(colnames.keys())].rename(columns=colnames)
+        
+        # Append to the overall DataFrame
+        all_characters_data = pd.concat([all_characters_data, temp_data], ignore_index=True)
+
+    # Melt the DataFrame to long format for easier plotting
+    melted_data_all = all_characters_data.melt(id_vars=[colname_id], 
+                                               value_vars=tech_tools_suffix, 
+                                               var_name='Technology', 
+                                               value_name='Frequency')
+
+    # Remove NaN entries for plotting
+    melted_data_all.dropna(inplace=True)
+
+    return melted_data_all
+
+# Example usage:
+# df = pd.read_csv('your_dataset.csv')
+# prepared_data = prepare_technology_data(df)
+# print(prepared_data.head())
+
+def prepare_character_data(data, colname_suffixes):
+    """
+    Extracts and prepares data for analysis from multiple characters.
+    
+    Parameters:
+        data (DataFrame): The original dataset containing technology tools and demographic information for characters.
+        colname_id (String): Part of the column name for which we want to do the analysis, e.g. 'gender'.
+    
+    Returns:
+        DataFrame: A long-format DataFrame ready for analysis and visualization.
+    """
+
+    # Prepare and concatenate data for all characters with accurate column names
+    all_characters_data = pd.DataFrame()
+
+    # Loop through each character number
+    for i in range(1, 5):
+        # Prepare the mapping for each character's technology columns using the correct format
+        colnames = {
+            f"character{i}_{suffix}": suffix for suffix in colname_suffixes
+        }
+
+        
+        # Select and rename the relevant columns for each character
+        temp_data = data[list(colnames.keys())].rename(columns=colnames)
+        
+        # Append to the overall DataFrame
+        all_characters_data = pd.concat([all_characters_data, temp_data], ignore_index=True)
+
+    return all_characters_data
+
 
 ###  TODO Analyse de l’échantillon
 
@@ -477,8 +560,125 @@ st.dataframe(df)
 # Intéressant de regarder qui pratique quel type d’emploi (femmes vs hommes, jeunes…)
 # Corrélation entre le métier pratiqué et la sensibilité du personnage à l’écologie
 
-# TODO Analyse de la technologie
+job_data = prepare_character_data(data=data,colname_suffixes={'job_sector'})
+
+# Calculate the frequency of each job sector
+job_sector_counts = job_data['job_sector'].value_counts().reset_index()
+job_sector_counts.columns = ['Job Sector', 'Frequency']
+
+# Creating a bar chart for job sector distribution
+fig = px.bar(job_sector_counts, x='Job Sector', y='Frequency',
+             title='Frequency of Job Sectors',
+             labels={'Job Sector': 'Job Sector', 'Frequency': 'Frequency'})
+
+# Update layout for better visualization
+fig.update_layout(xaxis_title='Job Sector',
+                  yaxis_title='Count',
+                  xaxis_tickangle=-45)
+
+# Show the plot
+st.plotly_chart(fig)
+
+
+data.replace('Non, il / elle a même des comportements et valeurs explicitement anti-écologiques ','Non, anti-écolo', inplace=True)
+job_data = prepare_character_data(data= data, colname_suffixes={'interested_ecology','job_sector'})
+
+# Create a cross-tabulation
+ct = pd.crosstab(job_data['job_sector'], job_data['interested_ecology'])
+
+# Generate a heatmap
+fig = px.imshow(ct, text_auto=True, aspect="auto",
+                labels=dict(x="Interest in Ecology", y="Job Sector", color="Count"),
+                title='Heatmap of Job Sectors and Interest in Ecology')
+
+# Update layout for clarity
+fig.update_xaxes(side="bottom")
+
+# Display the plot
+st.plotly_chart(fig)
+
+job_data = prepare_character_data(data= data, colname_suffixes={'interested_ecology','job'})
+
+
+# Create a cross-tabulation
+ct = pd.crosstab(job_data['job'], job_data['interested_ecology'])
+
+# Generate a heatmap
+fig = px.imshow(ct, text_auto=True, aspect="auto",
+                labels=dict(x="Interest in Ecology", y="Job", color="Count"),
+                title='Heatmap of Job and Interest in Ecology')
+
+# Update layout for clarity
+fig.update_xaxes(side="bottom")
+
+# Display the plot
+st.plotly_chart(fig)
+
+
+
+# Analyse de la technologie
 # Visualisation de l’emploi de la technologie à l’écran selon le type de film (regarder en particulier le genre) et le type de personnage (corréler en particulier à l’âge). Question sous-jacente : comment utilise-t-on la technologie à l’écran ? est-ce systématique ? est-ce corrélé à une certaine forme de réalité des usages ?
+melted_data_all = prepare_technology_data(data=data, colname_id='gender')
+
+# Custom color mapping 
+color_map = { "Pas du tout" : '#98FB98', "Occasionnellement": '#99CCFF', "Souvent": '#3A4EC6', "Systématiquement": '#FF5050'}
+category_orders={"Frequency": ["Pas du tout", "Occasionnellement", "Souvent", "Systématiquement"]}
+
+label_nb_characters = 'Nombre de réponses'
+
+
+fig = px.histogram(melted_data_all, x='Technology', color='Frequency', 
+                   barmode='stack', title='Utilisation de la technologie par appareil et fréquence',
+                   labels={'count':'Count of Responses'}, 
+                   color_discrete_map=color_map,
+                   category_orders=category_orders)
+fig.update_layout(# xaxis_title='Technology Tool',
+                  yaxis_title=label_nb_characters,
+                  legend_title='Fréquence',
+                  xaxis={'categoryorder':'total descending'},
+                  xaxis_tickangle=-45)
+st.plotly_chart(fig)
+
+
+fig = px.histogram(melted_data_all, x='Technology', color='Frequency', 
+                   barmode='stack', facet_col='gender', 
+                   title='Utilisation de la technologie par genre, type d\'appareil et fréquence',
+                   labels={'count':'Count of Responses'}, 
+                   color_discrete_map=color_map,
+                   category_orders=category_orders)
+
+# Update the x-axis title for each subplot
+fig.update_xaxes(title_text='', tickangle=-45)
+
+fig.update_layout(# xaxis_title='Technologie',
+                  yaxis_title=label_nb_characters,
+                  legend_title='Fréquence'
+                  )
+
+st.plotly_chart(fig)
+
+# analysis by ethnic group
+melted_data_all = prepare_technology_data(data=data, colname_id='ethnic_origin')
+melted_data_all.rename(columns={'ethnic_origin':'Ethnie'}, inplace=True)
+
+
+fig = px.histogram(melted_data_all, x='Technology', color='Frequency', 
+                   barmode='stack', facet_col='Ethnie', 
+                   title='Utilisation de la technologie par ethnie, type d\'appareil et fréquence',
+                   color_discrete_map=color_map,
+                   category_orders=category_orders)
+
+# Update the x-axis title for each subplot
+fig.update_xaxes(title_text='', tickangle=-45)
+
+fig.update_layout(yaxis_title=label_nb_characters,
+                  legend_title='Fréquence'
+                  )
+
+
+st.plotly_chart(fig)
+
+
 
 # TODO Analyse des modes de vie
 
