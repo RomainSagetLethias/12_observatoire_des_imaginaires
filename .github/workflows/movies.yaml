@@ -2,7 +2,7 @@ name: Update Movies Dataset
 
 on:
   # Run this workflow once per day, at 0:15 UTC
-  # schedule: [{ cron: "15 0 * * *" }]
+  schedule: [{ cron: "15 0 * * *" }]
   # Run this workflow when triggered manually in GitHub’s UI.
   workflow_dispatch: {}
 
