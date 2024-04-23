@@ -33,7 +33,7 @@ def load_data(file: str) -> pd.DataFrame:
 
 # Load the data
 # TODO connect to Google Sheet and load data 
-file_path = "data/Etape 1 Identification du film - Feuille 1.csv"  
+file_path = "https://raw.githubusercontent.com/dataforgoodfr/12_observatoire_des_imaginaires/analyse/streamlit_app_v2/data/Etape%201%20Identification%20du%20film%20-%20Feuille%201.csv"  
 # ne pas lire la première ligne
 data = load_data(file_path)
 
