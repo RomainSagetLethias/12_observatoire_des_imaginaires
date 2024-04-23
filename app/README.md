@@ -1,4 +1,4 @@
-Pour exécuter l'application Streamlit de , lancer la commande suivante depuis ce répertoire : 
+Pour exécuter l'application Streamlit de , lancer la commande suivante depuis le répertoire parent : 
     `streamlit run odi_streamlit.py`
 
 Note: 
