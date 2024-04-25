@@ -684,7 +684,24 @@ fig.update_layout(yaxis_title=label_nb_characters,
 
 st.plotly_chart(fig)
 
+melted_data_all = prepare_technology_data(data=data, colname_id='age_group')
+melted_data_all.rename(columns={'age_group':'Catégorie d\'âge'}, inplace=True)
 
+fig = px.histogram(melted_data_all, x='Technology', color='Frequency', 
+                   barmode='group', pattern_shape='Catégorie d\'âge',
+                   title='Utilisation de la technologie par catégorie d\'âge, type d\'appareil et fréquence',
+                   color_discrete_map=color_map,
+                   category_orders=category_orders)
+
+# Update the x-axis title for each subplot
+fig.update_xaxes(title_text='', tickangle=-45)
+
+fig.update_layout(yaxis_title=label_nb_characters,
+                  legend_title='Fréquence'
+                  )
+
+
+st.plotly_chart(fig)
 
 # TODO Analyse des modes de vie
 
@@ -696,6 +713,60 @@ st.plotly_chart(fig)
 # Cartographie des contenus qui mentionnent un enjeu écologique et corrélation à leurs caractéristiques (nationalité etc.). Est-ce que ça a évolué au cours du temps ? Est-ce que certains genres s’y prêtent  plus que d’autres ? Quand l’écologie est mentionnée, de quel type de récit s’agit-il ? (dystopie, récit futuriste…)
 # Adéquation entre le score calculé et le score proposé par les répondants
 # Enjeux écologiques les plus fréquemment montrés / les plus ignorés
+
+
+# Des enjeux écologiques et environnementaux sont-ils mentionnés au cours du récit, même brièvement ?
+response_counts = data['environmental_issues'].value_counts().reset_index()
+response_counts.columns = ['environmental_issues', 'Count']
+fig = px.pie(response_counts, names='environmental_issues', values='Count', title='Des enjeux écologiques et environnementaux sont-ils mentionnés au cours du récit, même brièvement ?')
+st.plotly_chart(fig)
+
+import re
+def extract_text_between_brackets(string):
+    # Regular expression pattern to find text between [ and (
+    # This is useful for extracting short labels for the environmental issues
+
+    # \[  -> match the character '[' literally
+    # (   -> start capturing group
+    # [^\[\(]+ -> match any character except '[' or '(' one or more times
+    # )   -> end capturing group
+    # \)  -> match the character '(' literally
+    match = re.search(r'\[([^\[\(]+)\(', string)
+    
+    if match:
+        return match.group(1).strip()  # Return the matched group and strip any extra whitespace
+    return None  # Return None if no match is found
+
+
+# Filter columns that start with 'environmental_issues'
+env_columns = data[[col for col in data.columns if col.startswith('environmental_issues')]]
+enjeux = env_columns[env_columns['environmental_issues'] == 'Oui'].drop(axis=1, labels='environmental_issues')
+
+# rename columns with shorter names
+colnames = { colname : extract_text_between_brackets(colname) for colname in enjeux.columns}
+enjeux.rename(columns=colnames, inplace=True)
+
+# Melt the DataFrame to long format
+long_format_data = enjeux.melt(var_name='Column', value_name='Value')
+
+# Count the frequency of each value in each column
+value_counts = long_format_data.groupby(['Column', 'Value']).size().reset_index(name='Counts')
+
+# Pivot the data for heatmap
+heatmap_data = value_counts.pivot(index='Value', columns='Column', values='Counts').fillna(0)
+
+# Create the heatmap using Plotly Express
+fig = px.imshow(heatmap_data, 
+                labels=dict(x="Column", y="Value", color="Frequency"),
+                x=heatmap_data.columns,
+                y=heatmap_data.index,
+                title="Fréquence des mentions des enjeux écologiques selon le type d\'enjeu")
+fig.update_xaxes(side="bottom")  # Ensuring the x-axis labels are at the bottom
+st.plotly_chart(fig)
+
+
+
+
 # Box office / récompenses obtenues par les films qui parlent d’écologie ou qui ont des scores écologiques élevées (question : ces films sont-ils vus ?)
 # A l’inverse, quels scores écologiques pour les films les plus vus au box office ? 
 
