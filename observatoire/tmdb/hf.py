@@ -2,10 +2,10 @@ import pandas as pd
 from datasets import Dataset, DatasetDict, load_dataset
 
 
-def load_movies_dataset() -> pd.DataFrame | None:
+def load_movies_dataset(path: str) -> pd.DataFrame | None:
     try:
         dataset = load_dataset(
-            "DataForGood/observatoire_des_imaginaires_movies",
+            path,
             split="train",
         )
         dataset.cleanup_cache_files()
@@ -18,7 +18,7 @@ def load_movies_dataset() -> pd.DataFrame | None:
     return df
 
 
-def save_movies_dataset(df: pd.DataFrame) -> None:
+def save_movies_dataset(df: pd.DataFrame, path: str) -> None:
     dataset = Dataset.from_pandas(df, preserve_index=False)
     dataset_dict = DatasetDict({"train": dataset})
-    dataset_dict.push_to_hub("DataForGood/observatoire_des_imaginaires_movies")
+    dataset_dict.push_to_hub(path)

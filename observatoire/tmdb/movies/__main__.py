@@ -4,11 +4,11 @@ import os
 
 from tqdm import tqdm
 
-from observatoire.tmdb.config import TMDB_BATCH_SIZE
+from observatoire.tmdb.config import HF_MOVIES_DATASET, TMDB_BATCH_SIZE
+from observatoire.tmdb.helpers import merge
+from observatoire.tmdb.hf import load_movies_dataset, save_movies_dataset
 from observatoire.tmdb.logger import setup_logger
 from observatoire.tmdb.movies.data import transform_movie_json
-from observatoire.tmdb.movies.helpers import merge
-from observatoire.tmdb.movies.hf import load_movies_dataset, save_movies_dataset
 from observatoire.tmdb.movies.tmdb import get_latest_movie_id, get_movie_data
 
 
@@ -20,7 +20,7 @@ def executor() -> None:
     latest_id = get_latest_movie_id()
 
     # second, let's get the last movie from our last run
-    df_current = load_movies_dataset()
+    df_current = load_movies_dataset(HF_MOVIES_DATASET)
     current_id = df_current["id"].max() if df_current is not None else None
 
     # Generate a list of movie IDs
@@ -62,7 +62,7 @@ def executor() -> None:
 
                 # Update the movies dataset on the Hugging Face Hub
                 logger.info("Will update dataset on Hugging Face Hub")
-                save_movies_dataset(df_merged)
+                save_movies_dataset(df_merged, HF_MOVIES_DATASET)
 
             except Exception as error:
                 logger.critical(f"Error when merging dataframes {error}")
