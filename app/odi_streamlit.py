@@ -32,7 +32,10 @@ def load_data(file: str) -> pd.DataFrame:
 
 # Load the data
 # TODO connect to Google Sheet and load data
-file_path = "./data/Etape 1 Identification du film - Feuille 1 - enrichi.csv"  # "https://raw.githubusercontent.com/dataforgoodfr/12_observatoire_des_imaginaires/analyse/streamlit_app_v2/data/Etape%201%20Identification%20du%20film%20-%20Feuille%201.csv"
+# file_path = "./data/Etape 1 Identification du film - Feuille 1 - enrichi.csv"  
+file_path = ("https://raw.githubusercontent.com/dataforgoodfr/" 
+             "12_observatoire_des_imaginaires/analyse/streamlit_app_v2/"
+             "data/Etape%201%20Identification%20du%20film%20-%20Feuille%201%20-%20enrichi.csv")
 # ne pas lire la première ligne
 data = load_data(file_path)
 
@@ -40,17 +43,20 @@ data = load_data(file_path)
 # Renommer la colonne title -> TITRE
 data.rename(columns={"title": "TITRE"}, inplace=True)
 
-
+logo= ("https://media.licdn.com/dms/image/D4E0BAQEZHVBxFn3OXQ/company-logo_200_200/"
+         "0/1697116934909/cercle_thmatique_culture_the_shifters_logo?e=1718841600&v=beta"
+         "&t=_2DWaEBrblIgXhgVASUipHTcJesOL6s1Sk2uH73Kx58")
 ### A. Sidebar
 with st.sidebar:
     st.image(
-        "https://media.licdn.com/dms/image/D4E0BAQEZHVBxFn3OXQ/company-logo_200_200/0/1697116934909/cercle_thmatique_culture_the_shifters_logo?e=1718841600&v=beta&t=_2DWaEBrblIgXhgVASUipHTcJesOL6s1Sk2uH73Kx58",
+        logo,
         use_column_width=True,
     )  # width=50
 
     st.title("Fait par la dream team _Analyse de données_")
     st.write(
-        "Cette application analyse les données du sondage de **l'Observatoire des Imaginaires**. "
+        ("Cette application analyse les données du sondage "
+         "de **l'Observatoire des Imaginaires**. ")
     )
 
 
@@ -83,7 +89,8 @@ with cont_metric:
     df["TITRE"] = df["TITRE"].str.upper()
     # mettre les pays en majuscule et supprimer les espaces au début et à la fin
     df["production_countries"] = df["production_countries"].str.upper()
-    # df["production_countries"] = df["production_countries"].apply(lambda p: p.replace(" ET ", ";"))
+    # df["production_countries"] = 
+    # df["production_countries"].apply(lambda p: p.replace(" ET ", ";"))
     df.insert(
         311,
         "pays_rework",
@@ -102,8 +109,7 @@ with cont_metric:
         st.dataframe(df)
         st.write(list(df.columns))
 
-    # TODO    ------    reprendre ce code quand les données sont enrichies avec les informations du film
-
+    
     ### A. Affichage des métriques macro
     col_nb_oeuvre_analyse, col_nb_film, col_nb_tvshow = st.columns([2, 2, 2])
     with col_nb_oeuvre_analyse:
@@ -340,7 +346,8 @@ with st.container():
             1 if col in o.split(",") else 0 for o in genre_group_df["genres"]
         ]
 
-    # j'ajoute une colonne qui fait la somme des films pour un genre donné et ajoute le type pour cette nouvelle ligne
+    # j'ajoute une colonne qui fait la somme des films pour un genre donné 
+    # et ajoute le type pour cette nouvelle ligne
     total_film = dict(
         genre_group_df.loc[genre_group_df["TYPE"] == "FILM"][liste_genre_cine].sum()
     )
@@ -380,7 +387,8 @@ with st.container():
             for o in productions_df["production_companies"]
         ]
 
-    # j'ajoute une colonne qui fait la somme des films pour un genre donné et ajoute le type pour cette nouvelle ligne
+    # j'ajoute une colonne qui fait la somme des films pour un genre donné 
+    # et ajoute le type pour cette nouvelle ligne
     total_film_prod = dict(
         productions_df.loc[productions_df["TYPE"] == "FILM"][
             liste_production_cine
@@ -417,7 +425,8 @@ with st.container():
             1 if col in str(a).split(",") else 0 for a in award_df["liste_festival"]
         ]
 
-    # j'ajoute une colonne qui fait la somme des films pour une récompense donnés et ajoute le type pour cette nouvelle ligne
+    # j'ajoute une colonne qui fait la somme des films pour une récompense donnés 
+    # et ajoute le type pour cette nouvelle ligne
     total_film_award = dict(
         award_df.loc[award_df["TYPE"] == "FILM"][liste_award_cine].sum()
     )
@@ -434,7 +443,6 @@ with st.container():
         total_film_award, liste_award_cine, "Répartition des récompenses"
     )
 
-# TODO   FIN  ------    reprendre ce code quand les données sont enrichies avec les informations du film
 
 st.divider()
 
@@ -456,7 +464,8 @@ from odi_functions import prepare_technology_data
 # Répartition des canaux de diffusion
 # Répartition des genres (uniques)
 # Répartition des producteurs
-# Nombre de films pour chaque type de récompense documentées (Césars, Cannes, Oscars…) / par année de sortie
+# Nombre de films pour chaque type de récompense documentées 
+#                      (Césars, Cannes, Oscars…) / par année de sortie
 # Année de sortie en fonction de nationalité
 # Genres en fonction de l’année de sortie
 # Genres en fonction de la nationalité
@@ -467,7 +476,8 @@ from odi_functions import prepare_technology_data
 # TODO Analyse des doublons
 # Pour chaque contenu présents plusieurs fois:
 # visualisation de toutes les réponses divergentes
-# visualisation des personnages à la même désignation (nom ou nom d’acteur) et des réponses divergentes pour les mêmes personnages
+# visualisation des personnages à la même désignation (nom ou nom d’acteur) 
+#            et des réponses divergentes pour les mêmes personnages
 
 
 # TODO Analyse de l’arène
@@ -475,8 +485,10 @@ from odi_functions import prepare_technology_data
 # Questions
 # Où se passent les récits ?
 # Est-ce que le lieu du récit est corrélé avec la nationalité du film ?
-# Dans quels types de société se déroulent nos récits (réalité vs fantaisie, dystopie vs utopies…) ? Y a t-il une influence du genre ?
-# À quelle époque se passent les récits ? Quelle est la proportion de récits qui ne se déroulent pas à l’époque de leur écriture ? Comment est-ce influencé par leur genre ?
+# Dans quels types de société se déroulent nos récits (réalité vs fantaisie, dystopie 
+#              vs utopies…) ? Y a t-il une influence du genre ?
+# À quelle époque se passent les récits ? Quelle est la proportion de récits qui ne se 
+#        déroulent pas à l’époque de leur écriture ? Comment est-ce influencé par leur genre ?
 # Est-ce que ces tendances évoluent au cours du temps ?
 
 # Visualisations
@@ -509,12 +521,14 @@ from odi_functions import prepare_technology_data
 # TODO Analyse des personnages renseignés
 
 # Questions:
-# Quelles sont les caractéristiques des personnages ? Qui sont-ils ? Comment vivent-ils ? Quelle est l’influence des caractéristiques du film sur les caractéristiques des personnages ?
+# Quelles sont les caractéristiques des personnages ? Qui sont-ils ? Comment vivent-ils ? 
+# Quelle est l’influence des caractéristiques du film sur les caractéristiques des personnages ?
 
 # Visualisations:
 # Nombre total de personnages renseignés
 # Nombre moyen de personnages par film
-# En cas de contenus identiques, identification des désignations identiques et comparaison des divergences dans les répon
+# En cas de contenus identiques, identification des désignations identiques et 
+#       comparaison des divergences dans les répon
 # Répartitions:
 # Tranches d’âges
 # Genre
@@ -523,30 +537,43 @@ from odi_functions import prepare_technology_data
 # Principal ou secondaire
 # Corrélations:
 # Possibilité de corréler chacun des 5 paramètres au 4 autres (genre vs âge etc.)
-# Possibilité de corréler chacun des 5 paramètres à nationalité du film / date du film / producteur / genre du film
+# Possibilité de corréler chacun des 5 paramètres 
+#        à nationalité du film / date du film / producteur / genre du film
 
 # TODO Analyse des caractéristiques écologiques des personnages
 
 # Questions
-# Les personnages de fiction présentent-ils des traits de caractères écologiques ? si oui, qui sont ces personnages ? Est-ce que c’est influencé par les caractéristiques du film (nationalité …) ? Est-ce que ça évolue dans le temps ?
+# Les personnages de fiction présentent-ils des traits de caractères écologiques ? 
+#   si oui, qui sont ces personnages ? Est-ce que c’est influencé par les caractéristiques 
+#   du film (nationalité …) ? Est-ce que ça évolue dans le temps ?
 
 # Visualisations
 # Répartition des réponses à la sensibilité écologique du personnage
-# Corrélation entre la sensibilité écologique et les caractéristiques du personnage (genre / ethnicité /  âge / gentil-méchant / principal-secondaire)
-# Corrélation entre la présence de personnage ayant une sensibilité écolo et les caractéristiques du film (année / nationalité / genre / producteur / canal de diffusion)
+# Corrélation entre la sensibilité écologique et les caractéristiques du personnage 
+#      (genre / ethnicité /  âge / gentil-méchant / principal-secondaire)
+# Corrélation entre la présence de personnage ayant une sensibilité écolo et les 
+#   caractéristiques du film (année / nationalité / genre / producteur / canal de diffusion)
 
 # TODO Analyse de la mobilité à l’écran
 
 # Questions
 # Comment se déplace-t-on à l’écran ? Est-ce qu’il y a une corrélation entre
-# Visualisation de la proportion de modes de transport représentés à l’écran. Filtres possibles sur les caractéristiques du contenu (ex. que les films français) ou sur la nature des personnages (ex. tranches d’âge).
+# Visualisation de la proportion de modes de transport représentés à l’écran. Filtres 
+#    possibles sur les caractéristiques du contenu (ex. que les films français) 
+#    ou sur la nature des personnages (ex. tranches d’âge).
 # Objectif: répondre aux questions suivantes:
 # Comment se déplace-t-on à l’écran ?
 # Est-ce que ça varie selon le type de personnage et leur sensibilité à l’écologie ?
 
 # TODO Analyse de l’habitat
-# Visualisation générale des modes d’habitat à l’écran, avec filtres possibles sur les types de contenu ou sur les caractéristiques des personnages (ex. comment habitent les jeunes ? comment habitent les CSP+ ?). Importance corréler l’habitat à l’emploi exercé (i.e. la catégorie socio-professionnelle).
-# Corrélation entre les lieux de vie et les lieux de l’action (dans la catégorie arène). Question posée : les “aventures” se passent-elles forcément loin du lieu de vie des personnages ? Regarder notamment l’influence du genre et l’influence de la nationalité du film
+# Visualisation générale des modes d’habitat à l’écran, avec filtres possibles sur les 
+#     types de contenu ou sur les caractéristiques des personnages (ex. comment habitent les 
+#     jeunes ? comment habitent les CSP+ ?). Importance corréler l’habitat à l’emploi exercé 
+#     (i.e. la catégorie socio-professionnelle).
+# Corrélation entre les lieux de vie et les lieux de l’action (dans la catégorie arène). 
+#     Question posée : les “aventures” se passent-elles forcément loin du lieu de vie des 
+#     personnages ? Regarder notamment l’influence du genre et l’influence de la nationalité 
+#     du film
 
 # TODO Analyse de l’emploi
 # Visualisation des emplois représentés à l’écran selon le type de contenu.
@@ -627,7 +654,10 @@ st.plotly_chart(fig)
 
 
 # Analyse de la technologie
-# Visualisation de l’emploi de la technologie à l’écran selon le type de film (regarder en particulier le genre) et le type de personnage (corréler en particulier à l’âge). Question sous-jacente : comment utilise-t-on la technologie à l’écran ? est-ce systématique ? est-ce corrélé à une certaine forme de réalité des usages ?
+# Visualisation de l’emploi de la technologie à l’écran selon le type de film (regarder en 
+#  particulier le genre) et le type de personnage (corréler en particulier à l’âge). 
+#  Question sous-jacente : comment utilise-t-on la technologie à l’écran ? est-ce 
+#  systématique ? est-ce corrélé à une certaine forme de réalité des usages ?
 melted_data_all = prepare_technology_data(data=data, colname_id="gender")
 
 # Custom color mapping
@@ -737,19 +767,24 @@ st.plotly_chart(fig)
 
 # TODO
 # Pédagogie?
-# Cartographie des contenus qui mentionnent un enjeu écologique et corrélation à leurs caractéristiques (nationalité etc.). Est-ce que ça a évolué au cours du temps ? Est-ce que certains genres s’y prêtent  plus que d’autres ? Quand l’écologie est mentionnée, de quel type de récit s’agit-il ? (dystopie, récit futuriste…)
+# Cartographie des contenus qui mentionnent un enjeu écologique et corrélation à leurs 
+#    caractéristiques (nationalité etc.). Est-ce que ça a évolué au cours du temps ? Est-ce 
+#    que certains genres s’y prêtent  plus que d’autres ? Quand l’écologie est mentionnée, 
+#    de quel type de récit s’agit-il ? (dystopie, récit futuriste…)
 # Adéquation entre le score calculé et le score proposé par les répondants
 # Enjeux écologiques les plus fréquemment montrés / les plus ignorés
 
 
-# Des enjeux écologiques et environnementaux sont-ils mentionnés au cours du récit, même brièvement ?
+# Des enjeux écologiques et environnementaux sont-ils mentionnés au cours du récit, 
+#      même brièvement ?
 response_counts = data["environmental_issues"].value_counts().reset_index()
 response_counts.columns = ["environmental_issues", "Count"]
 fig = px.pie(
     response_counts,
     names="environmental_issues",
     values="Count",
-    title="Des enjeux écologiques et environnementaux sont-ils mentionnés au cours du récit, même brièvement ?",
+    title=("Des enjeux écologiques et environnementaux sont-ils "
+           "mentionnés au cours du récit, même brièvement ?"),
 )
 st.plotly_chart(fig)
 
@@ -794,12 +829,16 @@ fig.update_xaxes(side="bottom")  # Ensuring the x-axis labels are at the bottom
 st.plotly_chart(fig)
 
 
-# Box office / récompenses obtenues par les films qui parlent d’écologie ou qui ont des scores écologiques élevées (question : ces films sont-ils vus ?)
+# Box office / récompenses obtenues par les films qui parlent d’écologie ou qui ont 
+#         des scores écologiques élevées (question : ces films sont-ils vus ?)
 # A l’inverse, quels scores écologiques pour les films les plus vus au box office ?
 
 # Pédagogie clandestine ?
-# Visualisation et statistiques sur les comportements listés, avec filtres possibles sur la nature des contenus.
-# Corrélation au score écologique proposé par les répondants, la question étant : les spectateurs font-ils le lien entre certains comportements montrés à l’écran et l’impact écologique d’un contenu ?
+# Visualisation et statistiques sur les comportements listés, avec filtres possibles 
+#      sur la nature des contenus.
+# Corrélation au score écologique proposé par les répondants, la question étant : les 
+#   spectateurs font-ils le lien entre certains comportements montrés à l’écran et 
+#   l’impact écologique d’un contenu ?
 
 # Personnage écolo vs récit écolo
 

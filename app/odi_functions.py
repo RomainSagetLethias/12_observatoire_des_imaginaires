@@ -5,8 +5,10 @@ def prepare_technology_data(data, colname_id):
     Extracts and prepares technology-related data for analysis from multiple characters.
 
     Parameters:
-        data (DataFrame): The original dataset containing technology tools and demographic information for characters.
-        colname_id (String): Part of the column name for which we want to do the analysis, e.g. 'gender'.
+        data (DataFrame): The original dataset containing technology tools and demographic 
+        information for characters.
+        colname_id (String): Part of the column name for which we want to do the analysis, 
+        e.g. 'gender'.
 
     Returns:
         DataFrame: A long-format DataFrame ready for analysis and visualization.
@@ -68,8 +70,10 @@ def prepare_character_data(data, colname_suffixes):
     Extracts and prepares data for analysis from multiple characters.
 
     Parameters:
-        data (DataFrame): The original dataset containing technology tools and demographic information for characters.
-        colname_id (String): Part of the column name for which we want to do the analysis, e.g. 'gender'.
+        data (DataFrame): The original dataset containing technology tools and demographic 
+        information for characters.
+        colname_id (String): Part of the column name for which we want to do the analysis, 
+        e.g. 'gender'.
 
     Returns:
         DataFrame: A long-format DataFrame ready for analysis and visualization.
