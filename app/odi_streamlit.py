@@ -304,12 +304,12 @@ with st.container():
 	                     values='total_film', #color='TYPE',
 	                      #color_discrete_map={'all':'lightgrey', 'FILM':'darkblue', 'SERIE':'gold'},
 						title=titre)
-	    fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
+	fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
 	
 	    st.plotly_chart(fig, theme="streamlit")
 
 	#Préparation du dataframe pour les films
-	genre_group_df = df[["id_tmdb","genres", "TITRE","TYPE"]].drop_duplicates()
+    genre_group_df = df[["id_tmdb","genres", "TITRE","TYPE"]].drop_duplicates()
 	
 	# je crée une liste de genres uniques
 	liste_genre_cine = list(set([g for genre in genre_group_df["genres"] for g in genre.split(",")]))
