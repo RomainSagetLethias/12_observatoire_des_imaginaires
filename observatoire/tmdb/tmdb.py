@@ -1,16 +1,8 @@
-import json
-
-
-def parse_keywords(keywords: str) -> str:
+def parse_keywords(keywords: dict) -> str:
     """
     Parses the keywords into a list
     """
 
-    keywords_dict = json.loads(keywords)
-
-    keywords_list = []
-
-    for item in keywords_dict["keywords"]:
-        keywords_list.append(item["name"])
+    keywords_list = [item["name"] for item in keywords]
 
     return ", ".join(keywords_list)

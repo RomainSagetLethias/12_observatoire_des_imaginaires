@@ -8,6 +8,7 @@ import requests
 from tqdm import tqdm
 
 from observatoire.tmdb.config import TMDB_API_KEY, TMDB_MAX_RETRIES
+from observatoire.tmdb.tmdb import parse_keywords
 
 lock = threading.Lock()
 FULL_LOG = False  # Mark True to log everything
@@ -55,23 +56,8 @@ def get_keywords(movie_id: int) -> dict | None:
     response = requests.get(url, headers=headers)
 
     if response.status_code == HTTPStatus.OK:
-        return response.text
+        return response.json()
     return None
-
-
-def parse_keywords(keywords: str) -> str:
-    """
-    Parses the keywords into a list
-    """
-
-    keywords_dict = json.loads(keywords)
-
-    keywords_list = []
-
-    for item in keywords_dict["keywords"]:
-        keywords_list.append(item["name"])
-
-    return ", ".join(keywords_list)
 
 
 def handler_get_keywords(movie_id: int) -> list[int, str]:
@@ -81,10 +67,10 @@ def handler_get_keywords(movie_id: int) -> list[int, str]:
 
     data = get_keywords(movie_id)
 
-    if not data:
+    if not data or len(data["keywords"]) == 0:
         return None
 
-    keywords_str = parse_keywords(data)
+    keywords_str = parse_keywords(data["keywords"])
 
     return keywords_str
 

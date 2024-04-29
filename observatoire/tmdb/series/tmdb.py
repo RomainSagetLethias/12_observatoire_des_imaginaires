@@ -14,7 +14,7 @@ lock = threading.Lock()
 FULL_LOG = False  # Mark True to log everything
 
 
-def get_latest_show_id() -> int:
+def get_latest_series_id() -> int:
     """
     Get the ID of the latest series added to the TMDB database.
     """
@@ -56,7 +56,7 @@ def get_keywords(series_id: int) -> dict | None:
     response = requests.get(url, headers=headers)
 
     if response.status_code == HTTPStatus.OK:
-        return response.text
+        return response.json()
     return None
 
 
@@ -67,10 +67,10 @@ def handler_get_keywords(series_id: int) -> list[int, str]:
 
     data = get_keywords(series_id)
 
-    if not data:
+    if not data or len(data["results"]) == 0:
         return None
 
-    keywords_str = parse_keywords(data)
+    keywords_str = parse_keywords(data["results"])
 
     return keywords_str
 
