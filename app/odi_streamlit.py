@@ -14,6 +14,8 @@ import plotly.express as px
 import streamlit as st
 
 # Other Pkgs
+from odi_functions import prepare_character_data
+from odi_functions import prepare_technology_data
 
 # 3.Setup de l'application Streamlit  - Streamlit webpage properties / set up the app
 # with wide view preset and a title
@@ -339,12 +341,6 @@ with st.container():
             f"majorité des contenus français sont visionnés xxx (xxx%)."
         )
 
-        # Optional part about 'Autre' channel, if needed (use round() as necessary)
-        # percent_other = round(canal_group_df.loc['Autre', 'canal_percent'], 2)
-        # part3 = (
-        #     f"\n\n:blue[{percent_other}%] des contenus sont visionnés sur un canal `Autre` "
-        #     f"que la liste proposée (cf ci-contre)"
-        # )
 
         # Combine all parts and use markdown
         st.markdown(part1 + part2)
@@ -452,7 +448,7 @@ with st.container():
     )
 
 with st.container():
-    # st.subheader("RECOMPENSES")
+    # --st.subheader("RECOMPENSES")
     # Préparation du dataframe pour les films
     award_df = df[
         ["id_tmdb", "TITRE", "TYPE", "nb_recompense", "liste_festival"]
@@ -461,7 +457,7 @@ with st.container():
     liste_award_cine = list(
         set([p for prod in award_df["liste_festival"] for p in str(prod).split(",")])
     )
-    # st.write(liste_award_cine)
+    # --st.write(liste_award_cine)
 
     # je conmpte le nombre de films par récompense
     award_df = pd.concat([award_df, pd.DataFrame(columns=liste_award_cine)])
@@ -482,7 +478,7 @@ with st.container():
         .rename(columns={0: "total_film", "index": "liste_festival"})
     )
     total_film_award.insert(2, "TYPE", "FILM")
-    # st.dataframe(total_film_award)
+    # --st.dataframe(total_film_award)
 
     get_chart_82052330(
         total_film_award, liste_award_cine, "Répartition des récompenses"
@@ -490,9 +486,6 @@ with st.container():
 
 
 st.divider()
-
-from odi_functions import prepare_character_data
-from odi_functions import prepare_technology_data
 
 
 ###  TODO Analyse de l’échantillon
