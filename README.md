@@ -117,9 +117,19 @@ https://observatoire-des-imaginaires.observablehq.cloud/questionnaire
 This repo includes invoke for pythonic task execution. To see the
 is of available tasks you can run:
 
+```bash
 invoke -l
+```
 
-# Updating the Movie Database
+###
+
+To run the observable site in development mode you can run:
+
+```bash
+invoke dev
+```
+
+### Updating the Movie Database
 
 The [French regional TMDB Movies Dataset](https://huggingface.co/datasets/DataForGood/observatoire_des_imaginaires_movies)
 on Hugging Face can be updated using the following command:
