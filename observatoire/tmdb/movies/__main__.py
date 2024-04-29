@@ -5,11 +5,11 @@ import os
 from tqdm import tqdm
 
 from observatoire.tmdb.config import TMDB_BATCH_SIZE
-from observatoire.tmdb.data import transform_movie_json
-from observatoire.tmdb.helpers import merge
-from observatoire.tmdb.hf import load_movies_dataset, save_movies_dataset
 from observatoire.tmdb.logger import setup_logger
-from observatoire.tmdb.tmdb import get_latest_movie_id, get_movie_data
+from observatoire.tmdb.movies.data import transform_movie_json
+from observatoire.tmdb.movies.helpers import merge
+from observatoire.tmdb.movies.hf import load_movies_dataset, save_movies_dataset
+from observatoire.tmdb.movies.tmdb import get_latest_movie_id, get_movie_data
 
 
 def executor() -> None:

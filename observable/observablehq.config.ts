@@ -1,5 +1,6 @@
 // See https://observablehq.com/framework/config for documentation.
 export default {
+  root: "src",
   // The project’s title; used in the sidebar and webpage titles.
   title: "L'observatoire des imaginaires",
   sidebar: false,
