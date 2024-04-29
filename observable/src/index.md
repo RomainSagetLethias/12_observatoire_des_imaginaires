@@ -15,3 +15,7 @@ de choisir un film ou une série.
 </div>
 
 Merci de votre soutien !
+
+**Crédits**
+
+Ce site utilise TMDB et les API TMDB, mais n'est pas approuvé, certifié ou soutenu par TMDB.

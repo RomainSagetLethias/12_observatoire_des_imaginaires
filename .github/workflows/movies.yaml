@@ -1,0 +1,28 @@
+name: Update Movies Dataset
+
+on:
+  # Run this workflow once per day, at 0:15 UTC
+  schedule: [{ cron: "15 0 * * *" }]
+  # Run this workflow when triggered manually in GitHub’s UI.
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11.4"
+      - name: Setup Poetry
+        uses: Gr1N/setup-poetry@v9
+        with:
+          poetry-version: "1.7.1"
+      - run: poetry install --no-root
+      - run: poetry run python -m observatoire.tmdb.movies
+        env:
+          # Hugging Face credentials
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          # TMDB credentials
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_MAX_RETRIES: 500
