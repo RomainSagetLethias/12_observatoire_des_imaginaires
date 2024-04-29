@@ -10,7 +10,7 @@ de choisir un film ou une série.
       <button onclick="window.location.href='./films'">Choisir un film</button>
   </div>
   <div>
-      <button onclick="window.location.href='./shows'">Choisir une série</button>
+      <button onclick="window.location.href='./series'">Choisir une série</button>
   </div>
 </div>
 

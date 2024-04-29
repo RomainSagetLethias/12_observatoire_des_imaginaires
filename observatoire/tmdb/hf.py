@@ -1,10 +1,11 @@
+import datasets
 import pandas as pd
-from datasets import Dataset, DatasetDict, load_dataset
+from datasets import Dataset, DatasetDict
 
 
-def load_movies_dataset(path: str) -> pd.DataFrame | None:
+def load_dataset(path: str) -> pd.DataFrame | None:
     try:
-        dataset = load_dataset(
+        dataset = datasets.load_dataset(
             path,
             split="train",
         )
@@ -18,7 +19,7 @@ def load_movies_dataset(path: str) -> pd.DataFrame | None:
     return df
 
 
-def save_movies_dataset(df: pd.DataFrame, path: str) -> None:
+def save_dataset(df: pd.DataFrame, path: str) -> None:
     dataset = Dataset.from_pandas(df, preserve_index=False)
     dataset_dict = DatasetDict({"train": dataset})
     dataset_dict.push_to_hub(path)
