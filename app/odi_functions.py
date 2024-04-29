@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 
 def prepare_technology_data(data, colname_id):
     """
@@ -12,6 +13,13 @@ def prepare_technology_data(data, colname_id):
 
     Returns:
         DataFrame: A long-format DataFrame ready for analysis and visualization.
+
+    Example usage:
+        df = pd.read_csv('your_dataset.csv')
+        prepared_data = prepare_technology_data(df)
+        print(prepared_data.head())
+
+
     """
     # Technology tools as described in the dataset
     tech_tools_suffix = [
@@ -59,11 +67,6 @@ def prepare_technology_data(data, colname_id):
     return melted_data_all
 
 
-# Example usage:
-# df = pd.read_csv('your_dataset.csv')
-# prepared_data = prepare_technology_data(df)
-# print(prepared_data.head())
-
 
 def prepare_character_data(data, colname_suffixes):
     """
@@ -96,9 +99,6 @@ def prepare_character_data(data, colname_suffixes):
         )
 
     return all_characters_data
-
-
-import re
 
 
 def extract_text_between_brackets(string):

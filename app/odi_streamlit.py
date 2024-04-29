@@ -32,7 +32,6 @@ def load_data(file: str) -> pd.DataFrame:
 
 # Load the data
 # TODO connect to Google Sheet and load data
-# file_path = "./data/Etape 1 Identification du film - Feuille 1 - enrichi.csv"  
 file_path = ("https://raw.githubusercontent.com/dataforgoodfr/" 
              "12_observatoire_des_imaginaires/analyse/streamlit_app_v2/"
              "data/Etape%201%20Identification%20du%20film%20-%20Feuille%201%20-%20enrichi.csv")
@@ -74,10 +73,6 @@ cont_metric = st.container()
 # TODO est-ce encore utile ?
 df = data[~data["TITRE"].str.contains(r"Contenu \d+", na=False)].dropna(how="all")
 
-# ne conserver qu'une ligne sur 4  (ce qui revient à supprimer
-# les informations des personnages 2, 3, 4 quand ils existent)
-##df_truncated = df.iloc[::4]
-
 # Nettoyage du data set
 
 # mettre les titres en majuscule
@@ -89,8 +84,6 @@ with cont_metric:
     df["TITRE"] = df["TITRE"].str.upper()
     # mettre les pays en majuscule et supprimer les espaces au début et à la fin
     df["production_countries"] = df["production_countries"].str.upper()
-    # df["production_countries"] = 
-    # df["production_countries"].apply(lambda p: p.replace(" ET ", ";"))
     df.insert(
         311,
         "pays_rework",
@@ -128,9 +121,18 @@ with cont_metric:
             value=len(set(df[df.TYPE == "SÉRIE"]["TITRE"])),
         )
 
+    film_titles = set(df[df.TYPE == 'FILM']['TITRE'])
+    all_titles = set(df['TITRE'])
+    film_ratio = round(100 * len(film_titles) / len(all_titles), 2)
+
+    serie_titles = set(df[df.TYPE == 'SÉRIE']['TITRE'])
+    serie_ratio = round(100 * len(serie_titles) / len(all_titles), 2)
+
     st.write(
-        f":blue[{round(100*len(set(df[df.TYPE == 'FILM']['TITRE']))/len(set(df['TITRE'])),2)}%] des contenus renseignés sont des films vs :blue[{round(100*len(set(df[df.TYPE == 'SÉRIE']['TITRE']))/len(set(df['TITRE'])),2)}%] des séries.",  # noqa: E501
+        f":blue[{film_ratio}%] des contenus renseignés sont des films vs "
+        f":blue[{serie_ratio}%] des séries."
     )
+
 
 
 # Trouver les titres qui apparaissent plus de 4 fois dans la colonne "TITRE"
@@ -256,9 +258,24 @@ with st.container():
             ascending=False,
         )
 
-        st.write(
-            f"A **:blue[{country_value_pareto}%]**, les 2 principaux pays dont les contenus sont les plus visionnés sont : {country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['pays_rework'][0].capitalize()} ({country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['country_percent'][0]}%) et {country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['pays_rework'][1].capitalize()} ({country_group_df.nlargest(2,'country_percent').reset_index(drop=True)['country_percent'][1]}%).",  # noqa: E501
+        # Pre-calculate the two largest values
+        top_countries_df = country_group_df.nlargest(2,'country_percent').reset_index(drop=True)
+
+        # Extract country names and percentages for readability
+        country1_name = top_countries_df['pays_rework'][0].capitalize()
+        country1_percent = top_countries_df['country_percent'][0]
+        country2_name = top_countries_df['pays_rework'][1].capitalize()
+        country2_percent = top_countries_df['country_percent'][1]
+
+        # Format the output string
+        output_string = (
+            f"A **:blue[{country_value_pareto}%]**, les 2 principaux pays dont les contenus "
+            f"sont les plus visionnés sont : {country1_name} ({country1_percent}%) et "
+            f"{country2_name} ({country2_percent}%)."
         )
+
+        st.write(output_string)
+
 
         fig_type = px.bar(
             country_group_df,
@@ -300,9 +317,37 @@ with st.container():
         ]
         percent_canal_visionne2 = round(canal_group_df.canal_percent.nlargest(2)[1], 2)
 
-        st.markdown(
-            f"Les contenus sont visionnés principalement sur :blue[{canal_visionne1.capitalize()}] (:blue[{percent_canal_visionne1}%]) et :blue[{canal_visionne2.capitalize()}] (:blue[{percent_canal_visionne2}%]).\n\n La majorité des contenus visionnés sur :blue[{canal_visionne1.capitalize()}] ont pour pays d'origine :blue[{canal_country_group_df[canal_country_group_df['channel']==canal_visionne1].nlargest(1,'nb_titre').reset_index()['pays_rework'][0]}] (:blue[%]), alors que la majorité des contenus français sont visionnés xxx (xxx%)."  # \n\n :blue[{round(canal_group_df.loc['Autre','canal_percent'],2)}%] des contenus sont visionnés sur un canal `Autre` que la liste proposée (cf ci-contre)",
+        # Pre-calculate and capitalize channel names
+        channel1 = canal_visionne1.capitalize()
+        channel2 = canal_visionne2.capitalize()
+
+        # Prepare the first part of the message
+        part1 = (
+            f"Les contenus sont visionnés principalement sur :blue[{channel1}] "
+            f"(:blue[{percent_canal_visionne1}%]) et :blue[{channel2}] "
+            f"(:blue[{percent_canal_visionne2}%])."
         )
+
+        # Calculate country of origin for the most watched content on channel1
+        top_country_df = canal_country_group_df[canal_country_group_df['channel'] == canal_visionne1]
+        top_country = top_country_df.nlargest(1, 'nb_titre').reset_index()['pays_rework'][0]
+
+        # Prepare the second part of the message
+        part2 = (
+            f"\n\nLa majorité des contenus visionnés sur :blue[{channel1}] ont pour "
+            f"pays d'origine :blue[{top_country}] (:blue[%]), alors que la  "
+            f"majorité des contenus français sont visionnés xxx (xxx%)."
+        )
+
+        # Optional part about 'Autre' channel, if needed (use round() as necessary)
+        # percent_other = round(canal_group_df.loc['Autre', 'canal_percent'], 2)
+        # part3 = (
+        #     f"\n\n:blue[{percent_other}%] des contenus sont visionnés sur un canal `Autre` "
+        #     f"que la liste proposée (cf ci-contre)"
+        # )
+
+        # Combine all parts and use markdown
+        st.markdown(part1 + part2)
 
         # Les contenus sont visionnés principalement sur Netflix (29.91%) ou dans
         # une salle de cinéma (28.97%). La majorité des contenus américains sont
