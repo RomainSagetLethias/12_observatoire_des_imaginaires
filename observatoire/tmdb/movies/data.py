@@ -13,7 +13,7 @@ from observatoire.tmdb.data import (
 )
 
 
-def transform_movie_json(movie_json: list[str]) -> pd.DataFrame:
+def make_movie_df(movie_json: list[str]) -> pd.DataFrame:
     """
     Transforms the JSON data into a DataFrame
     """

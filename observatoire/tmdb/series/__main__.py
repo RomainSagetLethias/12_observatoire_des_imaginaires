@@ -8,7 +8,7 @@ from observatoire.tmdb.config import HF_SERIES_DATASET, TMDB_BATCH_SIZE
 from observatoire.tmdb.helpers import merge
 from observatoire.tmdb.hf import load_dataset, save_dataset
 from observatoire.tmdb.logger import setup_logger
-from observatoire.tmdb.series.data import transform_series_json
+from observatoire.tmdb.series.data import make_series_df
 from observatoire.tmdb.series.tmdb import get_latest_series_id, get_series_data
 
 
@@ -56,7 +56,7 @@ def executor() -> None:
             # merge today's data with the old dataset
             try:
                 # Load and format the json data
-                df_latest = transform_series_json(series_json)
+                df_latest = make_series_df(series_json)
 
                 df_merged = merge(df_current, df_latest, logger)
 

@@ -8,7 +8,7 @@ from observatoire.tmdb.config import HF_MOVIES_DATASET, TMDB_BATCH_SIZE
 from observatoire.tmdb.helpers import merge
 from observatoire.tmdb.hf import load_dataset, save_dataset
 from observatoire.tmdb.logger import setup_logger
-from observatoire.tmdb.movies.data import transform_movie_json
+from observatoire.tmdb.movies.data import make_movie_df
 from observatoire.tmdb.movies.tmdb import get_latest_movie_id, get_movie_data
 
 
@@ -56,7 +56,7 @@ def executor() -> None:
             # merge today's data with the old dataset
             try:
                 # Load and format the json data
-                df_latest = transform_movie_json(movie_json)
+                df_latest = make_movie_df(movie_json)
 
                 df_merged = merge(df_current, df_latest, logger)
 

@@ -13,7 +13,7 @@ from observatoire.tmdb.data import (
 )
 
 
-def transform_series_json(series_json: list[str]) -> pd.DataFrame:
+def make_series_df(series_json: list[str]) -> pd.DataFrame:
     """
     Transforms the JSON data into a DataFrame
     """
