@@ -41,9 +41,8 @@ def safe_float(values: dict, field_name: str) -> float:
 
 
 def safe_str(values: dict, field_name: str) -> str:
-    return (
-        str(values[field_name]) if values[field_name] is not any(VARIATIONS_TO_IGNORE) else ""
-    )
+    val = values[field_name] if values[field_name] is not None else ""
+    return str(val) if val is not any(VARIATIONS_TO_IGNORE) else ""
 
 
 def safe_bool(values: dict, field_name: str) -> bool:
