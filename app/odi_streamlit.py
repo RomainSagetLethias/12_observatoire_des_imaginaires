@@ -14,8 +14,14 @@ import plotly.express as px
 import streamlit as st
 
 # Other Pkgs
-from odi_functions import prepare_character_data
-from odi_functions import prepare_technology_data
+from odi_functions import (
+    extract_text_between_brackets,
+    prepare_character_data,
+    prepare_technology_data,
+)
+
+# Colors #E44F43",“#0B5773”,“#7BC0AC”,“#D3C922”
+# gradient colors: #86B4B4, #0B5773, #58949F, #0A3555 #101727
 
 # 3.Setup de l'application Streamlit  - Streamlit webpage properties / set up the app
 # with wide view preset and a title
@@ -34,7 +40,7 @@ def load_data(file: str) -> pd.DataFrame:
 
 # Load the data
 # TODO connect to Google Sheet and load data
-file_path = ("https://raw.githubusercontent.com/dataforgoodfr/" 
+file_path = ("https://raw.githubusercontent.com/dataforgoodfr/"
              "12_observatoire_des_imaginaires/analyse/streamlit_app_v2/"
              "data/Etape%201%20Identification%20du%20film%20-%20Feuille%201%20-%20enrichi.csv")
 # ne pas lire la première ligne
@@ -56,8 +62,8 @@ with st.sidebar:
 
     st.title("Fait par la dream team _Analyse de données_")
     st.write(
-        ("Cette application analyse les données du sondage "
-         "de **l'Observatoire des Imaginaires**. ")
+        "Cette application analyse les données du sondage "
+         "de **l'Observatoire des Imaginaires**. ",
     )
 
 
@@ -104,7 +110,7 @@ with cont_metric:
         st.dataframe(df)
         st.write(list(df.columns))
 
-    
+
     ### A. Affichage des métriques macro
     col_nb_oeuvre_analyse, col_nb_film, col_nb_tvshow = st.columns([2, 2, 2])
     with col_nb_oeuvre_analyse:
@@ -123,16 +129,16 @@ with cont_metric:
             value=len(set(df[df.TYPE == "SÉRIE"]["TITRE"])),
         )
 
-    film_titles = set(df[df.TYPE == 'FILM']['TITRE'])
-    all_titles = set(df['TITRE'])
+    film_titles = set(df[df.TYPE == "FILM"]["TITRE"])
+    all_titles = set(df["TITRE"])
     film_ratio = round(100 * len(film_titles) / len(all_titles), 2)
 
-    serie_titles = set(df[df.TYPE == 'SÉRIE']['TITRE'])
+    serie_titles = set(df[df.TYPE == "SÉRIE"]["TITRE"])
     serie_ratio = round(100 * len(serie_titles) / len(all_titles), 2)
 
     st.write(
         f":blue[{film_ratio}%] des contenus renseignés sont des films vs "
-        f":blue[{serie_ratio}%] des séries."
+        f":blue[{serie_ratio}%] des séries.",
     )
 
 
@@ -199,9 +205,9 @@ with st.container():
 
         date_min = str(df.release_year.min())
         date_max = str(df.release_year.max())
-        date_pareto = date_group_df[date_group_df["periode_percent"] <= 80][
+        date_pareto = date_group_df[date_group_df["periode_percent"] <= 80][ # noqa: PLR2004
             "release_year"
-        ].min()  # noqa: PLR2004
+        ].min()
         date_value_pareto = int(
             round(
                 date_group_df[date_group_df["periode_percent"] <= 80][  # noqa: PLR2004
@@ -246,8 +252,8 @@ with st.container():
         country_value_pareto = int(
             round(
                 country_group_df[
-                    country_group_df["country_percent"] >= 10
-                ][  # noqa: PLR2004
+                    country_group_df["country_percent"] >= 10 # noqa: PLR2004
+                ][
                     "country_percent"
                 ].sum(),
                 2,
@@ -261,13 +267,13 @@ with st.container():
         )
 
         # Pre-calculate the two largest values
-        top_countries_df = country_group_df.nlargest(2,'country_percent').reset_index(drop=True)
+        top_countries_df = country_group_df.nlargest(2,"country_percent").reset_index(drop=True)
 
         # Extract country names and percentages for readability
-        country1_name = top_countries_df['pays_rework'][0].capitalize()
-        country1_percent = top_countries_df['country_percent'][0]
-        country2_name = top_countries_df['pays_rework'][1].capitalize()
-        country2_percent = top_countries_df['country_percent'][1]
+        country1_name = top_countries_df["pays_rework"][0].capitalize()
+        country1_percent = top_countries_df["country_percent"][0]
+        country2_name = top_countries_df["pays_rework"][1].capitalize()
+        country2_percent = top_countries_df["country_percent"][1]
 
         # Format the output string
         output_string = (
@@ -331,8 +337,8 @@ with st.container():
         )
 
         # Calculate country of origin for the most watched content on channel1
-        top_country_df = canal_country_group_df[canal_country_group_df['channel'] == canal_visionne1]
-        top_country = top_country_df.nlargest(1, 'nb_titre').reset_index()['pays_rework'][0]
+        cntr_df = canal_country_group_df[canal_country_group_df["channel"] == canal_visionne1]
+        top_country = cntr_df.nlargest(1, "nb_titre").reset_index()["pays_rework"][0]
 
         # Prepare the second part of the message
         part2 = (
@@ -357,18 +363,17 @@ with st.container():
 
 st.divider()
 with st.container():
-    # st.subheader("GENRES CINEMATOGRAPHIQUES")
+    st.subheader("GENRES CINEMATOGRAPHIQUES")
     # Fonction pour créer le treemap
     @st.cache_data
-    def get_chart_82052330(df, liste, titre):
+    def get_chart_82052330(df: pd.DataFrame, liste: list[str], titre: str) -> None:
         fig = px.treemap(
             df,
             path=[px.Constant("all"), liste],
             values="total_film",  # color='TYPE',
-            # color_discrete_map={'all':'lightgrey', 'FILM':'darkblue', 'SERIE':'gold'},
             title=titre,
         )
-        fig.update_layout(margin=dict(t=50, l=25, r=25, b=25))
+        fig.update_layout(margin={"t":50, "l":25, "r":25, "b":25})
 
         st.plotly_chart(fig, theme="streamlit")
 
@@ -376,21 +381,20 @@ with st.container():
     genre_group_df = df[["id_tmdb", "genres", "TITRE", "TYPE"]].drop_duplicates()
 
     # je crée une liste de genres uniques
-    liste_genre_cine = list(
-        set([g for genre in genre_group_df["genres"] for g in genre.split(",")])
-    )
+    liste_genre_cine = list({g for genre in genre_group_df["genres"] for g in genre.split(",")})
 
-    # je conmpte le nombre de films avec au moins le genre pris en compte
+
+    # je compte le nombre de films avec au moins le genre pris en compte
     genre_group_df = pd.concat([genre_group_df, pd.DataFrame(columns=liste_genre_cine)])
     for col in liste_genre_cine:
         genre_group_df[col] = [
             1 if col in o.split(",") else 0 for o in genre_group_df["genres"]
         ]
 
-    # j'ajoute une colonne qui fait la somme des films pour un genre donné 
+    # j'ajoute une colonne qui fait la somme des films pour un genre donné
     # et ajoute le type pour cette nouvelle ligne
     total_film = dict(
-        genre_group_df.loc[genre_group_df["TYPE"] == "FILM"][liste_genre_cine].sum()
+        genre_group_df.loc[genre_group_df["TYPE"] == "FILM"][liste_genre_cine].sum(),
     )
 
     total_film = (
@@ -408,19 +412,15 @@ with st.container():
         ["id_tmdb", "TITRE", "TYPE", "production_companies"]
     ].drop_duplicates()
     # je crée une liste de genres uniques
-    liste_production_cine = list(
-        set(
-            [
-                p
-                for prod in productions_df["production_companies"]
-                for p in prod.split(",")
-            ]
-        )
-    )
+    liste_production_cine = list({p
+        for prod in productions_df["production_companies"]
+        for p in prod.split(",")
+    })
 
-    # je conmpte le nombre de films par producteur
+
+    # je compte le nombre de films par producteur
     productions_df = pd.concat(
-        [productions_df, pd.DataFrame(columns=liste_production_cine)]
+        [productions_df, pd.DataFrame(columns=liste_production_cine)],
     )
     for col in liste_production_cine:
         productions_df[col] = [
@@ -428,12 +428,12 @@ with st.container():
             for o in productions_df["production_companies"]
         ]
 
-    # j'ajoute une colonne qui fait la somme des films pour un genre donné 
+    # j'ajoute une colonne qui fait la somme des films pour un genre donné
     # et ajoute le type pour cette nouvelle ligne
     total_film_prod = dict(
         productions_df.loc[productions_df["TYPE"] == "FILM"][
             liste_production_cine
-        ].sum()
+        ].sum(),
     )
 
     total_film_prod = (
@@ -444,20 +444,20 @@ with st.container():
     total_film_prod.insert(2, "TYPE", "FILM")
 
     get_chart_82052330(
-        total_film_prod, liste_production_cine, "Répartition des producteurs"
+        total_film_prod, liste_production_cine, "Répartition des producteurs",
     )
 
 with st.container():
-    # --st.subheader("RECOMPENSES")
+    st.subheader("RECOMPENSES")
     # Préparation du dataframe pour les films
     award_df = df[
         ["id_tmdb", "TITRE", "TYPE", "nb_recompense", "liste_festival"]
     ].drop_duplicates()
 
-    liste_award_cine = list(
-        set([p for prod in award_df["liste_festival"] for p in str(prod).split(",")])
-    )
-    # --st.write(liste_award_cine)
+    liste_award_cine = list({p
+        for prod in award_df["liste_festival"] for p in str(prod).split(",")
+    })
+    st.write(liste_award_cine)
 
     # je conmpte le nombre de films par récompense
     award_df = pd.concat([award_df, pd.DataFrame(columns=liste_award_cine)])
@@ -466,10 +466,10 @@ with st.container():
             1 if col in str(a).split(",") else 0 for a in award_df["liste_festival"]
         ]
 
-    # j'ajoute une colonne qui fait la somme des films pour une récompense donnés 
+    # j'ajoute une colonne qui fait la somme des films pour une récompense donnés
     # et ajoute le type pour cette nouvelle ligne
     total_film_award = dict(
-        award_df.loc[award_df["TYPE"] == "FILM"][liste_award_cine].sum()
+        award_df.loc[award_df["TYPE"] == "FILM"][liste_award_cine].sum(),
     )
 
     total_film_award = (
@@ -478,10 +478,10 @@ with st.container():
         .rename(columns={0: "total_film", "index": "liste_festival"})
     )
     total_film_award.insert(2, "TYPE", "FILM")
-    # --st.dataframe(total_film_award)
+    st.dataframe(total_film_award)
 
     get_chart_82052330(
-        total_film_award, liste_award_cine, "Répartition des récompenses"
+        total_film_award, liste_award_cine, "Répartition des récompenses",
     )
 
 
@@ -502,7 +502,7 @@ st.divider()
 # Répartition des canaux de diffusion
 # Répartition des genres (uniques)
 # Répartition des producteurs
-# Nombre de films pour chaque type de récompense documentées 
+# Nombre de films pour chaque type de récompense documentées
 #                      (Césars, Cannes, Oscars…) / par année de sortie
 # Année de sortie en fonction de nationalité
 # Genres en fonction de l’année de sortie
@@ -514,7 +514,7 @@ st.divider()
 # TODO Analyse des doublons
 # Pour chaque contenu présents plusieurs fois:
 # visualisation de toutes les réponses divergentes
-# visualisation des personnages à la même désignation (nom ou nom d’acteur) 
+# visualisation des personnages à la même désignation (nom ou nom d’acteur)
 #            et des réponses divergentes pour les mêmes personnages
 
 
@@ -523,9 +523,9 @@ st.divider()
 # Questions
 # Où se passent les récits ?
 # Est-ce que le lieu du récit est corrélé avec la nationalité du film ?
-# Dans quels types de société se déroulent nos récits (réalité vs fantaisie, dystopie 
+# Dans quels types de société se déroulent nos récits (réalité vs fantaisie, dystopie
 #              vs utopies…) ? Y a t-il une influence du genre ?
-# À quelle époque se passent les récits ? Quelle est la proportion de récits qui ne se 
+# À quelle époque se passent les récits ? Quelle est la proportion de récits qui ne se
 #        déroulent pas à l’époque de leur écriture ? Comment est-ce influencé par leur genre ?
 # Est-ce que ces tendances évoluent au cours du temps ?
 
@@ -559,13 +559,13 @@ st.divider()
 # TODO Analyse des personnages renseignés
 
 # Questions:
-# Quelles sont les caractéristiques des personnages ? Qui sont-ils ? Comment vivent-ils ? 
+# Quelles sont les caractéristiques des personnages ? Qui sont-ils ? Comment vivent-ils ?
 # Quelle est l’influence des caractéristiques du film sur les caractéristiques des personnages ?
 
 # Visualisations:
 # Nombre total de personnages renseignés
 # Nombre moyen de personnages par film
-# En cas de contenus identiques, identification des désignations identiques et 
+# En cas de contenus identiques, identification des désignations identiques et
 #       comparaison des divergences dans les répon
 # Répartitions:
 # Tranches d’âges
@@ -575,42 +575,42 @@ st.divider()
 # Principal ou secondaire
 # Corrélations:
 # Possibilité de corréler chacun des 5 paramètres au 4 autres (genre vs âge etc.)
-# Possibilité de corréler chacun des 5 paramètres 
+# Possibilité de corréler chacun des 5 paramètres
 #        à nationalité du film / date du film / producteur / genre du film
 
 # TODO Analyse des caractéristiques écologiques des personnages
 
 # Questions
-# Les personnages de fiction présentent-ils des traits de caractères écologiques ? 
-#   si oui, qui sont ces personnages ? Est-ce que c’est influencé par les caractéristiques 
+# Les personnages de fiction présentent-ils des traits de caractères écologiques ?
+#   si oui, qui sont ces personnages ? Est-ce que c’est influencé par les caractéristiques
 #   du film (nationalité …) ? Est-ce que ça évolue dans le temps ?
 
 # Visualisations
 # Répartition des réponses à la sensibilité écologique du personnage
-# Corrélation entre la sensibilité écologique et les caractéristiques du personnage 
-#      (genre / ethnicité /  âge / gentil-méchant / principal-secondaire)
-# Corrélation entre la présence de personnage ayant une sensibilité écolo et les 
+# Corrélation entre la sensibilité écologique et les caractéristiques
+#    du personnage (genre / ethnicité /  âge / gentil-méchant / principal-secondaire)
+# Corrélation entre la présence de personnage ayant une sensibilité écolo et les
 #   caractéristiques du film (année / nationalité / genre / producteur / canal de diffusion)
 
 # TODO Analyse de la mobilité à l’écran
 
 # Questions
 # Comment se déplace-t-on à l’écran ? Est-ce qu’il y a une corrélation entre
-# Visualisation de la proportion de modes de transport représentés à l’écran. Filtres 
-#    possibles sur les caractéristiques du contenu (ex. que les films français) 
+# Visualisation de la proportion de modes de transport représentés à l’écran. Filtres
+#    possibles sur les caractéristiques du contenu (ex. que les films français)
 #    ou sur la nature des personnages (ex. tranches d’âge).
 # Objectif: répondre aux questions suivantes:
 # Comment se déplace-t-on à l’écran ?
 # Est-ce que ça varie selon le type de personnage et leur sensibilité à l’écologie ?
 
 # TODO Analyse de l’habitat
-# Visualisation générale des modes d’habitat à l’écran, avec filtres possibles sur les 
-#     types de contenu ou sur les caractéristiques des personnages (ex. comment habitent les 
-#     jeunes ? comment habitent les CSP+ ?). Importance corréler l’habitat à l’emploi exercé 
+# Visualisation générale des modes d’habitat à l’écran, avec filtres possibles sur les
+#     types de contenu ou sur les caractéristiques des personnages (ex. comment habitent les
+#     jeunes ? comment habitent les CSP+ ?). Importance corréler l’habitat à l’emploi exercé
 #     (i.e. la catégorie socio-professionnelle).
-# Corrélation entre les lieux de vie et les lieux de l’action (dans la catégorie arène). 
-#     Question posée : les “aventures” se passent-elles forcément loin du lieu de vie des 
-#     personnages ? Regarder notamment l’influence du genre et l’influence de la nationalité 
+# Corrélation entre les lieux de vie et les lieux de l’action (dans la catégorie arène).
+#     Question posée : les “aventures” se passent-elles forcément loin du lieu de vie des
+#     personnages ? Regarder notamment l’influence du genre et l’influence de la nationalité
 #     du film
 
 # TODO Analyse de l’emploi
@@ -646,7 +646,7 @@ data.replace(
     inplace=True,
 )
 job_data = prepare_character_data(
-    data=data, colname_suffixes={"interested_ecology", "job_sector"}
+    data=data, colname_suffixes={"interested_ecology", "job_sector"},
 )
 
 # Create a cross-tabulation
@@ -657,7 +657,7 @@ fig = px.imshow(
     ct,
     text_auto=True,
     aspect="auto",
-    labels=dict(x="Interest in Ecology", y="Job Sector", color="Count"),
+    labels={"x":"Interest in Ecology", "y":"Job Sector", "color":"Count"},
     title="Heatmap of Job Sectors and Interest in Ecology",
 )
 
@@ -668,7 +668,7 @@ fig.update_xaxes(side="bottom")
 st.plotly_chart(fig)
 
 job_data = prepare_character_data(
-    data=data, colname_suffixes={"interested_ecology", "job"}
+    data=data, colname_suffixes={"interested_ecology", "job"},
 )
 
 
@@ -680,7 +680,7 @@ fig = px.imshow(
     ct,
     text_auto=True,
     aspect="auto",
-    labels=dict(x="Interest in Ecology", y="Job", color="Count"),
+    labels={"x":"Interest in Ecology", "y":"Job", "color":"Count"},
     title="Heatmap of Job and Interest in Ecology",
 )
 
@@ -692,9 +692,9 @@ st.plotly_chart(fig)
 
 
 # Analyse de la technologie
-# Visualisation de l’emploi de la technologie à l’écran selon le type de film (regarder en 
-#  particulier le genre) et le type de personnage (corréler en particulier à l’âge). 
-#  Question sous-jacente : comment utilise-t-on la technologie à l’écran ? est-ce 
+# Visualisation de l’emploi de la technologie à l’écran selon le type de film (regarder en
+#  particulier le genre) et le type de personnage (corréler en particulier à l’âge).
+#  Question sous-jacente : comment utilise-t-on la technologie à l’écran ? est-ce
 #  systématique ? est-ce corrélé à une certaine forme de réalité des usages ?
 melted_data_all = prepare_technology_data(data=data, colname_id="gender")
 
@@ -706,7 +706,7 @@ color_map = {
     "Systématiquement": "#FF5050",
 }
 category_orders = {
-    "Frequency": ["Pas du tout", "Occasionnellement", "Souvent", "Systématiquement"]
+    "Frequency": ["Pas du tout", "Occasionnellement", "Souvent", "Systématiquement"],
 }
 
 label_nb_characters = "Nombre de réponses"
@@ -747,7 +747,7 @@ fig = px.histogram(
 fig.update_xaxes(title_text="", tickangle=-45)
 
 fig.update_layout(  # xaxis_title='Technologie',
-    yaxis_title=label_nb_characters, legend_title="Fréquence"
+    yaxis_title=label_nb_characters, legend_title="Fréquence",
 )
 
 st.plotly_chart(fig)
@@ -805,15 +805,15 @@ st.plotly_chart(fig)
 
 # TODO
 # Pédagogie?
-# Cartographie des contenus qui mentionnent un enjeu écologique et corrélation à leurs 
-#    caractéristiques (nationalité etc.). Est-ce que ça a évolué au cours du temps ? Est-ce 
-#    que certains genres s’y prêtent  plus que d’autres ? Quand l’écologie est mentionnée, 
+# Cartographie des contenus qui mentionnent un enjeu écologique et corrélation à leurs
+#    caractéristiques (nationalité etc.). Est-ce que ça a évolué au cours du temps ? Est-ce
+#    que certains genres s’y prêtent  plus que d’autres ? Quand l’écologie est mentionnée,
 #    de quel type de récit s’agit-il ? (dystopie, récit futuriste…)
 # Adéquation entre le score calculé et le score proposé par les répondants
 # Enjeux écologiques les plus fréquemment montrés / les plus ignorés
 
 
-# Des enjeux écologiques et environnementaux sont-ils mentionnés au cours du récit, 
+# Des enjeux écologiques et environnementaux sont-ils mentionnés au cours du récit,
 #      même brièvement ?
 response_counts = data["environmental_issues"].value_counts().reset_index()
 response_counts.columns = ["environmental_issues", "Count"]
@@ -826,14 +826,13 @@ fig = px.pie(
 )
 st.plotly_chart(fig)
 
-from odi_functions import extract_text_between_brackets
 
 # Filter columns that start with 'environmental_issues'
 env_columns = data[
     [col for col in data.columns if col.startswith("environmental_issues")]
 ]
 enjeux = env_columns[env_columns["environmental_issues"] == "Oui"].drop(
-    axis=1, labels="environmental_issues"
+    axis=1, labels="environmental_issues",
 )
 
 # rename columns with shorter names
@@ -852,13 +851,13 @@ value_counts = (
 
 # Pivot the data for heatmap
 heatmap_data = value_counts.pivot(
-    index="Value", columns="Column", values="Counts"
+    index="Value", columns="Column", values="Counts",
 ).fillna(0)
 
 # Create the heatmap using Plotly Express
 fig = px.imshow(
     heatmap_data,
-    labels=dict(x="Column", y="Value", color="Frequency"),
+    labels={"x":"Column", "y":"Value", "color":"Frequency"},
     x=heatmap_data.columns,
     y=heatmap_data.index,
     title="Fréquence des mentions des enjeux écologiques selon le type d'enjeu",
@@ -867,15 +866,15 @@ fig.update_xaxes(side="bottom")  # Ensuring the x-axis labels are at the bottom
 st.plotly_chart(fig)
 
 
-# Box office / récompenses obtenues par les films qui parlent d’écologie ou qui ont 
+# Box office / récompenses obtenues par les films qui parlent d’écologie ou qui ont
 #         des scores écologiques élevées (question : ces films sont-ils vus ?)
 # A l’inverse, quels scores écologiques pour les films les plus vus au box office ?
 
 # Pédagogie clandestine ?
-# Visualisation et statistiques sur les comportements listés, avec filtres possibles 
+# Visualisation et statistiques sur les comportements listés, avec filtres possibles
 #      sur la nature des contenus.
-# Corrélation au score écologique proposé par les répondants, la question étant : les 
-#   spectateurs font-ils le lien entre certains comportements montrés à l’écran et 
+# Corrélation au score écologique proposé par les répondants, la question étant : les
+#   spectateurs font-ils le lien entre certains comportements montrés à l’écran et
 #   l’impact écologique d’un contenu ?
 
 # Personnage écolo vs récit écolo

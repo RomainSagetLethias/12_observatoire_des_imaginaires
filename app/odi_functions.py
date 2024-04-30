@@ -1,14 +1,17 @@
-import pandas as pd
 import re
 
-def prepare_technology_data(data, colname_id):
+import pandas as pd
+from pandas import DataFrame
+
+
+def prepare_technology_data(data: DataFrame, colname_id: str) -> DataFrame:
     """
     Extracts and prepares technology-related data for analysis from multiple characters.
 
     Parameters:
-        data (DataFrame): The original dataset containing technology tools and demographic 
+        data (DataFrame): The original dataset containing technology tools and demographic
         information for characters.
-        colname_id (String): Part of the column name for which we want to do the analysis, 
+        colname_id (String): Part of the column name for which we want to do the analysis,
         e.g. 'gender'.
 
     Returns:
@@ -50,7 +53,7 @@ def prepare_technology_data(data, colname_id):
 
         # Append to the overall DataFrame
         all_characters_data = pd.concat(
-            [all_characters_data, temp_data], ignore_index=True
+            [all_characters_data, temp_data], ignore_index=True,
         )
 
     # Melt the DataFrame to long format for easier plotting
@@ -68,14 +71,14 @@ def prepare_technology_data(data, colname_id):
 
 
 
-def prepare_character_data(data, colname_suffixes):
+def prepare_character_data(data: DataFrame, colname_suffixes: set[str]) -> DataFrame:
     """
     Extracts and prepares data for analysis from multiple characters.
 
     Parameters:
-        data (DataFrame): The original dataset containing technology tools and demographic 
+        data (DataFrame): The original dataset containing technology tools and demographic
         information for characters.
-        colname_id (String): Part of the column name for which we want to do the analysis, 
+        colname_id (String): Part of the column name for which we want to do the analysis,
         e.g. 'gender'.
 
     Returns:
@@ -95,13 +98,13 @@ def prepare_character_data(data, colname_suffixes):
 
         # Append to the overall DataFrame
         all_characters_data = pd.concat(
-            [all_characters_data, temp_data], ignore_index=True
+            [all_characters_data, temp_data], ignore_index=True,
         )
 
     return all_characters_data
 
 
-def extract_text_between_brackets(string):
+def extract_text_between_brackets(string: str) -> str:
     # Regular expression pattern to find text between [ and (
     # This is useful for extracting short labels for the environmental issues
 
@@ -114,7 +117,7 @@ def extract_text_between_brackets(string):
 
     if match:
         return match.group(
-            1
+            1,
         ).strip()  # Return the matched group and strip any extra whitespace
     return None  # Return None if no match is found
 
