@@ -11,41 +11,46 @@ VARIATIONS_TO_IGNORE = [
 ]
 
 
-def safe_list(values: dict, field_name: str) -> str | None:
+def safe_list(values: dict, field_name: str, key: str) -> str:
     # convert spoken_languages list to str
-    result = None
     result_list = []
     try:
-        for val in values:
-            if val[field_name] is not any(VARIATIONS_TO_IGNORE):
-                result_list.append(val[field_name])
-        if len(result_list) > 0:
-            result = ", ".join(result_list)
+        for val in values[field_name]:
+            if isinstance(val, dict) and val[key] is not any(VARIATIONS_TO_IGNORE):
+                result_list.append(val[key])
+            elif val is not any(VARIATIONS_TO_IGNORE):
+                result_list.append(val)
     except Exception:
         pass
 
-    return result
+    return ", ".join(result_list) if len(result_list) > 0 else ""
 
 
-def safe_int(values: dict, field_name: str) -> int | None:
-    return int(values[field_name]) if values[field_name] is not None else 0
+def safe_int(values: dict, field_name: str) -> int:
+    # use first value if values[field_name] is a list
+    val = (
+        values[field_name][0]
+        if isinstance(values[field_name], list) and len(values[field_name]) > 0
+        else values[field_name]
+    )
+    return int(val) if val is not None else 0
 
 
-def safe_float(values: dict, field_name: str) -> float | None:
+def safe_float(values: dict, field_name: str) -> float:
     return float(values[field_name]) if values[field_name] is not None else 0.0
 
 
-def safe_str(values: dict, field_name: str) -> str | None:
+def safe_str(values: dict, field_name: str) -> str:
     return (
-        str(values[field_name]) if values[field_name] is not any(VARIATIONS_TO_IGNORE) else None
+        str(values[field_name]) if values[field_name] is not any(VARIATIONS_TO_IGNORE) else ""
     )
 
 
-def safe_bool(values: dict, field_name: str) -> bool | None:
+def safe_bool(values: dict, field_name: str) -> bool:
     return bool(values[field_name]) if values[field_name] is not None else False
 
 
-def safe_date(values: dict, field_name: str) -> str | None:
+def safe_date(values: dict, field_name: str) -> str:
     return (
         str(values[field_name])
         if values[field_name] is not None and values[field_name] != ""

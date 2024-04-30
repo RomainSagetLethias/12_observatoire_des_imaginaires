@@ -27,8 +27,12 @@ def make_movie_df(movie_json: list[str]) -> pd.DataFrame:
 
             safe_data = {}
 
-            safe_data["genres"] = safe_list(line_in_json, "genres")
-            safe_data["spoken_languages"] = safe_list(line_in_json, "spoken_languages")
+            safe_data["genres"] = safe_list(line_in_json, "genres", "name")
+            safe_data["spoken_languages"] = safe_list(
+                line_in_json,
+                "spoken_languages",
+                "english_name",
+            )
             safe_data["adult"] = safe_bool(line_in_json, "adult")
             safe_data["backdrop_path"] = safe_str(line_in_json, "backdrop_path")
             safe_data["budget"] = safe_int(line_in_json, "budget")
@@ -44,10 +48,12 @@ def make_movie_df(movie_json: list[str]) -> pd.DataFrame:
             safe_data["production_companies"] = safe_list(
                 line_in_json,
                 "production_companies",
+                "name",
             )
             safe_data["production_countries"] = safe_list(
                 line_in_json,
                 "production_countries",
+                "name",
             )
             safe_data["release_date"] = safe_date(line_in_json, "release_date")
             safe_data["revenue"] = safe_int(line_in_json, "revenue")
