@@ -11,7 +11,7 @@ VARIATIONS_TO_IGNORE = [
 ]
 
 
-def safe_list(values: dict, field_name: str) -> None:
+def safe_list(values: dict, field_name: str) -> str | None:
     # convert spoken_languages list to str
     result = None
     result_list = []
@@ -51,3 +51,14 @@ def safe_date(values: dict, field_name: str) -> str | None:
         if values[field_name] is not None and values[field_name] != ""
         else "1500-01-01"
     )
+
+
+def remove_newline_characters(formatted_data: dict) -> dict:
+    updated_data = {}
+    for key, value in formatted_data.items():
+        if isinstance(value, str):  # Check if the value is a string
+            updated_value = value.replace("\n", " ").replace("\r", " ")
+            updated_data[key] = updated_value
+        else:
+            updated_data[key] = value
+    return updated_data
