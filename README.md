@@ -63,23 +63,16 @@ pip install poetry
    jupyter notebook
    ```
 
-## Download datasets from kaggle
+## Environment Variables
 
-If you want to use kaggle to download datasets, please make sure to have api's credentials in ~/.kaggle/kaggle.json.
+This code base uses a `.env` file at the root directory of the code base.
 
-How to get .json with kaggle api's credentials : [here](https://github.com/Kaggle/kaggle-api#api-credentials)
-
-Once you have setup your venv with poetry, you can use commands in the Makefile to download tmdb datasets from kaggle :
-
-```bash
-make download-tmdb-movies-dataset
-make download-full-tmdb-tv-shows-dataset
-```
-
-Alternatively you can download directly the datasets from kaggle website :
-
-- [tmdb-movies-dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies)
-- [full-tmdb-tv-shows-dataset](https://www.kaggle.com/datasets/asaniczka/full-tmdb-tv-shows-dataset-2023-150k-shows)
+| Variable         | Description                                                         |
+| ---------------  | ------------------------------------------------------------------- |
+| HF_TOKEN         | Hugging Face API Token. You must have write access to the datasets. |
+| TMDB_API_KEY     | TMDB API Token.                                                     |
+| TMDB_BATCH_SIZE  | Number of TMDB entries to download before updating a HF dataset.    |
+| TMDB_MAX_RETRIES | Maximum number of times to retry a failed TMDB API call.            |
 
 ## Website to select a specific movie or TV show
 
@@ -129,11 +122,20 @@ To run the observable site in development mode you can run:
 invoke dev
 ```
 
-### Updating the Movie Database
+### Updating the Movie Dataset
 
 The [French regional TMDB Movies Dataset](https://huggingface.co/datasets/DataForGood/observatoire_des_imaginaires_movies)
 on Hugging Face can be updated using the following command:
 
 ```bash
 invoke update-movies-dataset
+```
+
+### Updating the Series Dataset
+
+The [French regional TMDB Series Dataset](https://huggingface.co/datasets/DataForGood/observatoire_des_imaginaires_series)
+on Hugging Face can be updated using the following command:
+
+```bash
+invoke update-series-dataset
 ```
