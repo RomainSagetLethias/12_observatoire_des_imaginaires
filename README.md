@@ -67,12 +67,12 @@ pip install poetry
 
 This code base uses a `.env` file at the root directory of the code base.
 
-| Variable         | Description                                                         |
-| ---------------  | ------------------------------------------------------------------- |
-| HF_TOKEN         | Hugging Face API Token. You must have write access to the datasets. |
-| TMDB_API_KEY     | TMDB API Token.                                                     |
-| TMDB_BATCH_SIZE  | Number of TMDB entries to download before updating a HF dataset.    |
-| TMDB_MAX_RETRIES | Maximum number of times to retry a failed TMDB API call.            |
+| Variable         | Description                                                         | Default Value |
+| ---------------- | ------------------------------------------------------------------- | ------------- |
+| HF_TOKEN         | Hugging Face API Token. You must have write access to the datasets. | N/A           |
+| TMDB_API_KEY     | TMDB API Token.                                                     | N/A           |
+| TMDB_BATCH_SIZE  | Number of TMDB entries to download before updating a HF dataset.    | 10000         |
+| TMDB_MAX_RETRIES | Maximum number of times to retry a failed TMDB API call.            | 500           |
 
 ## Website to select a specific movie or TV show
 
