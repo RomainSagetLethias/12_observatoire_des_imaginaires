@@ -76,7 +76,7 @@ This code base uses a `.env` file at the root directory of the code base.
 
 ## Website to select a specific movie or TV show
 
-The [site-observable](https://github.com/dataforgoodfr/12_observatoire_des_imaginaires/tree/main/site-observable) directory contains
+The [observable](https://github.com/dataforgoodfr/12_observatoire_des_imaginaires/tree/main/site-observable) directory contains
 an observable framework site that collect film and movie data from the above datasets on kaggle and filters the datasets according
 to the following rules in order to reduced the size of the data present on the generated web site. This site provides a search UI
 allow a user to select a specific movie or TV show. The user can then click on the link for their selection to kick off the
