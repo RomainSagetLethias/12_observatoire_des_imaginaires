@@ -2,15 +2,9 @@
 # Application pour l'Observateur des Imaginaires
 """
 
-# Export fichier
-
-# Datavisualisation
-
+# Core Pkgs
 import pandas as pd
 import plotly.express as px
-
-# O.Importation des librairies nécessaires pour le script
-# Core Pkgs - Web application
 import streamlit as st
 
 # Other Pkgs
@@ -20,10 +14,13 @@ from odi_functions import (
     prepare_technology_data,
 )
 
+# Set to True if debug information should appear in Streamlit app
+debug = False
+
 # Colors #E44F43",“#0B5773”,“#7BC0AC”,“#D3C922”
 # gradient colors: #86B4B4, #0B5773, #58949F, #0A3555 #101727
 
-# 3.Setup de l'application Streamlit  - Streamlit webpage properties / set up the app
+# 3. Setup de l'application Streamlit  - Streamlit webpage properties / set up the app
 # with wide view preset and a title
 st.set_page_config(
     page_title="Observatoire des Imaginaires",
@@ -31,19 +28,16 @@ st.set_page_config(
     layout="wide",
 )
 
-
+# Load the data
 @st.cache_data  # 👈 Add the caching decorator
 def load_data(file: str) -> pd.DataFrame:
     df = pd.read_csv(file, sep=";", encoding="utf-8")
     return df
 
-
-# Load the data
 # TODO connect to Google Sheet and load data
 file_path = ("https://raw.githubusercontent.com/dataforgoodfr/"
              "12_observatoire_des_imaginaires/analyse/streamlit_app_v2/"
              "data/Etape%201%20Identification%20du%20film%20-%20Feuille%201%20-%20enrichi.csv")
-# ne pas lire la première ligne
 data = load_data(file_path)
 
 # Renommer les noms de colonnes (utile si le fichier d'entrée change de noms de colonnes)
@@ -53,6 +47,7 @@ data.rename(columns={"title": "TITRE"}, inplace=True)
 logo= ("https://media.licdn.com/dms/image/D4E0BAQEZHVBxFn3OXQ/company-logo_200_200/"
          "0/1697116934909/cercle_thmatique_culture_the_shifters_logo?e=1718841600&v=beta"
          "&t=_2DWaEBrblIgXhgVASUipHTcJesOL6s1Sk2uH73Kx58")
+
 ### A. Sidebar
 with st.sidebar:
     st.image(
@@ -75,40 +70,34 @@ header.write("""<div class='fixed-header'/>""", unsafe_allow_html=True)
 ### C. Container des métriques
 cont_metric = st.container()
 
-# Supprimer les lignes où la première colonne contient "Contenu XXX"
-# XXX est un nombre
 # Et Supprimer les lignes où toutes les valeurs sont NaN
-# TODO est-ce encore utile ?
-df = data[~data["TITRE"].str.contains(r"Contenu \d+", na=False)].dropna(how="all")
+df = data.dropna(how="all")
 
 # Nettoyage du data set
-
 # mettre les titres en majuscule
 df["TITRE"] = df["TITRE"].str.upper()
+# mettre les pays en majuscule et supprimer les espaces au début et à la fin
+df["production_countries"] = df["production_countries"].str.upper()
+df.insert(
+    311,  # TODO why 311?  Shouldn't we just append the column to the data frame?
+    "pays_rework",
+    [
+        pays if len(pays.split(";")) == 1 else "INTERNATIONAL"
+        for pays in df["production_countries"]
+    ],
+)
+
+### Convertir les types de données correctement ici
+# Convertir les années en entier
+annee = "release_year"
+df[annee] = pd.to_numeric(df[annee], errors="coerce").fillna(0).astype(int)
+
 
 with cont_metric:
-    # Nettoyage du data set
-    # mettre les titres en majuscule
-    df["TITRE"] = df["TITRE"].str.upper()
-    # mettre les pays en majuscule et supprimer les espaces au début et à la fin
-    df["production_countries"] = df["production_countries"].str.upper()
-    df.insert(
-        311,
-        "pays_rework",
-        [
-            pays if len(pays.split(";")) == 1 else "INTERNATIONAL"
-            for pays in df["production_countries"]
-        ],
-    )
-
-    ### Convertir les types de données correctement ici
-    # Convertir les années en entier
-    annee = "release_year"
-    df[annee] = pd.to_numeric(df[annee], errors="coerce").fillna(0).astype(int)
-
     with st.expander("Aperçu des donnéess"):
         st.dataframe(df)
-        st.write(list(df.columns))
+        if (debug):
+            st.write(list(df.columns))
 
 
     ### A. Affichage des métriques macro
@@ -142,16 +131,10 @@ with cont_metric:
     )
 
 
-
-# Trouver les titres qui apparaissent plus de 4 fois dans la colonne "TITRE"
-# (car chaque titre a 4 lignes, une pour chaque personnage)
-
-
 titles_more_than_once = (
     df.groupby(["TITRE", "TYPE"]).agg(compte=("TITRE", "count")).reset_index()
 )
 titles_more_than_once = titles_more_than_once[titles_more_than_once["compte"] > 1]
-
 
 # Afficher un bar chart des titres les plus fréquents
 # Affichage d'un bar chart horizontal
@@ -363,7 +346,7 @@ with st.container():
 
 st.divider()
 with st.container():
-    st.subheader("GENRES CINEMATOGRAPHIQUES")
+    st.subheader("Genres Cinématographiques")
     # Fonction pour créer le treemap
     @st.cache_data
     def get_chart_82052330(df: pd.DataFrame, liste: list[str], titre: str) -> None:
@@ -382,7 +365,6 @@ with st.container():
 
     # je crée une liste de genres uniques
     liste_genre_cine = list({g for genre in genre_group_df["genres"] for g in genre.split(",")})
-
 
     # je compte le nombre de films avec au moins le genre pris en compte
     genre_group_df = pd.concat([genre_group_df, pd.DataFrame(columns=liste_genre_cine)])
@@ -448,7 +430,7 @@ with st.container():
     )
 
 with st.container():
-    st.subheader("RECOMPENSES")
+    st.subheader("Récompenses")
     # Préparation du dataframe pour les films
     award_df = df[
         ["id_tmdb", "TITRE", "TYPE", "nb_recompense", "liste_festival"]
@@ -457,7 +439,8 @@ with st.container():
     liste_award_cine = list({p
         for prod in award_df["liste_festival"] for p in str(prod).split(",")
     })
-    st.write(liste_award_cine)
+    if (debug):
+        st.write(liste_award_cine)
 
     # je conmpte le nombre de films par récompense
     award_df = pd.concat([award_df, pd.DataFrame(columns=liste_award_cine)])
@@ -484,7 +467,6 @@ with st.container():
         total_film_award, liste_award_cine, "Répartition des récompenses",
     )
 
-
 st.divider()
 
 
@@ -494,6 +476,7 @@ st.divider()
 # Quels sont les sous-échantillons statistiquement représentatifs qui peuvent être analysés ?
 
 # Visualisations
+# TODO Nombre de réponses au questionnaire
 # Nombre de films uniques
 # Nombre, titre et fréquence des contenus non-uniques
 # Répartition des nationalités
@@ -618,77 +601,79 @@ st.divider()
 # Intéressant de regarder qui pratique quel type d’emploi (femmes vs hommes, jeunes…)
 # Corrélation entre le métier pratiqué et la sensibilité du personnage à l’écologie
 
-job_data = prepare_character_data(data=data, colname_suffixes={"job_sector"})
+with st.container():
+    st.subheader("Analyse des métiers")
+    job_data = prepare_character_data(data=df, colname_suffixes={"job_sector"})
 
-# Calculate the frequency of each job sector
-job_sector_counts = job_data["job_sector"].value_counts().reset_index()
-job_sector_counts.columns = ["Job Sector", "Frequency"]
+    # Calculate the frequency of each job sector
+    job_sector_counts = job_data["job_sector"].value_counts().reset_index()
+    job_sector_counts.columns = ["Job Sector", "Frequency"]
 
-# Creating a bar chart for job sector distribution
-fig = px.bar(
-    job_sector_counts,
-    x="Job Sector",
-    y="Frequency",
-    title="Frequency of Job Sectors",
-    labels={"Job Sector": "Job Sector", "Frequency": "Frequency"},
-)
+    # Creating a bar chart for job sector distribution
+    fig = px.bar(
+        job_sector_counts,
+        x="Job Sector",
+        y="Frequency",
+        title="Frequency of Job Sectors",
+        labels={"Job Sector": "Job Sector", "Frequency": "Frequency"},
+    )
 
-# Update layout for better visualization
-fig.update_layout(xaxis_title="Job Sector", yaxis_title="Count", xaxis_tickangle=-45)
+    # Update layout for better visualization
+    fig.update_layout(xaxis_title="Job Sector", yaxis_title="Count", xaxis_tickangle=-45)
 
-# Show the plot
-st.plotly_chart(fig)
+    # Show the plot
+    st.plotly_chart(fig)
+
+    # Replace long values to shorter values
+    df.replace(
+        "Non, il / elle a même des comportements et valeurs explicitement anti-écologiques ",
+        "Non, anti-écolo",
+        inplace=True,
+    )
+    job_data = prepare_character_data(
+        data=df, colname_suffixes={"interested_ecology", "job_sector"},
+    )
+
+    # Create a cross-tabulation
+    ct = pd.crosstab(job_data["job_sector"], job_data["interested_ecology"])
+
+    # Generate a heatmap
+    fig = px.imshow(
+        ct,
+        text_auto=True,
+        aspect="auto",
+        labels={"x":"Interest in Ecology", "y":"Job Sector", "color":"Count"},
+        title="Heatmap of Job Sectors and Interest in Ecology",
+    )
+
+    # Update layout for clarity
+    fig.update_xaxes(side="bottom")
+
+    # Display the plot
+    st.plotly_chart(fig)
+
+    job_data = prepare_character_data(
+        data=df, colname_suffixes={"interested_ecology", "job"},
+    )
 
 
-data.replace(
-    "Non, il / elle a même des comportements et valeurs explicitement anti-écologiques ",
-    "Non, anti-écolo",
-    inplace=True,
-)
-job_data = prepare_character_data(
-    data=data, colname_suffixes={"interested_ecology", "job_sector"},
-)
+    # Create a cross-tabulation
+    ct = pd.crosstab(job_data["job"], job_data["interested_ecology"])
 
-# Create a cross-tabulation
-ct = pd.crosstab(job_data["job_sector"], job_data["interested_ecology"])
+    # Generate a heatmap
+    fig = px.imshow(
+        ct,
+        text_auto=True,
+        aspect="auto",
+        labels={"x":"Interest in Ecology", "y":"Job", "color":"Count"},
+        title="Heatmap of Job and Interest in Ecology",
+    )
 
-# Generate a heatmap
-fig = px.imshow(
-    ct,
-    text_auto=True,
-    aspect="auto",
-    labels={"x":"Interest in Ecology", "y":"Job Sector", "color":"Count"},
-    title="Heatmap of Job Sectors and Interest in Ecology",
-)
+    # Update layout for clarity
+    fig.update_xaxes(side="bottom")
 
-# Update layout for clarity
-fig.update_xaxes(side="bottom")
-
-# Display the plot
-st.plotly_chart(fig)
-
-job_data = prepare_character_data(
-    data=data, colname_suffixes={"interested_ecology", "job"},
-)
-
-
-# Create a cross-tabulation
-ct = pd.crosstab(job_data["job"], job_data["interested_ecology"])
-
-# Generate a heatmap
-fig = px.imshow(
-    ct,
-    text_auto=True,
-    aspect="auto",
-    labels={"x":"Interest in Ecology", "y":"Job", "color":"Count"},
-    title="Heatmap of Job and Interest in Ecology",
-)
-
-# Update layout for clarity
-fig.update_xaxes(side="bottom")
-
-# Display the plot
-st.plotly_chart(fig)
+    # Display the plot
+    st.plotly_chart(fig)
 
 
 # Analyse de la technologie
@@ -696,107 +681,110 @@ st.plotly_chart(fig)
 #  particulier le genre) et le type de personnage (corréler en particulier à l’âge).
 #  Question sous-jacente : comment utilise-t-on la technologie à l’écran ? est-ce
 #  systématique ? est-ce corrélé à une certaine forme de réalité des usages ?
-melted_data_all = prepare_technology_data(data=data, colname_id="gender")
+with st.container():
+    st.subheader("Analyse de la technologie")
 
-# Custom color mapping
-color_map = {
-    "Pas du tout": "#98FB98",
-    "Occasionnellement": "#99CCFF",
-    "Souvent": "#3A4EC6",
-    "Systématiquement": "#FF5050",
-}
-category_orders = {
-    "Frequency": ["Pas du tout", "Occasionnellement", "Souvent", "Systématiquement"],
-}
+    melted_data_all = prepare_technology_data(data=df, colname_id="gender")
 
-label_nb_characters = "Nombre de réponses"
+    # Custom color mapping
+    color_map = {
+        "Pas du tout": "#98FB98",
+        "Occasionnellement": "#99CCFF",
+        "Souvent": "#3A4EC6",
+        "Systématiquement": "#FF5050",
+    }
+    category_orders = {
+        "Frequency": ["Pas du tout", "Occasionnellement", "Souvent", "Systématiquement"],
+    }
 
-
-fig = px.histogram(
-    melted_data_all,
-    x="Technology",
-    color="Frequency",
-    barmode="stack",
-    title="Utilisation de la technologie par appareil et fréquence",
-    labels={"count": "Count of Responses"},
-    color_discrete_map=color_map,
-    category_orders=category_orders,
-)
-fig.update_layout(  # xaxis_title='Technology Tool',
-    yaxis_title=label_nb_characters,
-    legend_title="Fréquence",
-    xaxis={"categoryorder": "total descending"},
-    xaxis_tickangle=-45,
-)
-st.plotly_chart(fig)
+    label_nb_characters = "Nombre de réponses"
 
 
-fig = px.histogram(
-    melted_data_all,
-    x="Technology",
-    color="Frequency",
-    barmode="stack",
-    facet_col="gender",
-    title="Utilisation de la technologie par genre, type d'appareil et fréquence",
-    labels={"count": "Count of Responses"},
-    color_discrete_map=color_map,
-    category_orders=category_orders,
-)
-
-# Update the x-axis title for each subplot
-fig.update_xaxes(title_text="", tickangle=-45)
-
-fig.update_layout(  # xaxis_title='Technologie',
-    yaxis_title=label_nb_characters, legend_title="Fréquence",
-)
-
-st.plotly_chart(fig)
-
-# analysis by ethnic group
-melted_data_all = prepare_technology_data(data=data, colname_id="ethnic_origin")
-melted_data_all.rename(columns={"ethnic_origin": "Ethnie"}, inplace=True)
+    fig = px.histogram(
+        melted_data_all,
+        x="Technology",
+        color="Frequency",
+        barmode="stack",
+        title="Utilisation de la technologie par appareil et fréquence",
+        labels={"count": "Count of Responses"},
+        color_discrete_map=color_map,
+        category_orders=category_orders,
+    )
+    fig.update_layout(  # xaxis_title='Technology Tool',
+        yaxis_title=label_nb_characters,
+        legend_title="Fréquence",
+        xaxis={"categoryorder": "total descending"},
+        xaxis_tickangle=-45,
+    )
+    st.plotly_chart(fig)
 
 
-fig = px.histogram(
-    melted_data_all,
-    x="Technology",
-    color="Frequency",
-    barmode="stack",
-    facet_col="Ethnie",
-    title="Utilisation de la technologie par ethnie, type d'appareil et fréquence",
-    color_discrete_map=color_map,
-    category_orders=category_orders,
-)
+    fig = px.histogram(
+        melted_data_all,
+        x="Technology",
+        color="Frequency",
+        barmode="stack",
+        facet_col="gender",
+        title="Utilisation de la technologie par genre, type d'appareil et fréquence",
+        labels={"count": "Count of Responses"},
+        color_discrete_map=color_map,
+        category_orders=category_orders,
+    )
 
-# Update the x-axis title for each subplot
-fig.update_xaxes(title_text="", tickangle=-45)
+    # Update the x-axis title for each subplot
+    fig.update_xaxes(title_text="", tickangle=-45)
 
-fig.update_layout(yaxis_title=label_nb_characters, legend_title="Fréquence")
+    fig.update_layout(  # xaxis_title='Technologie',
+        yaxis_title=label_nb_characters, legend_title="Fréquence",
+    )
 
+    st.plotly_chart(fig)
 
-st.plotly_chart(fig)
-
-melted_data_all = prepare_technology_data(data=data, colname_id="age_group")
-melted_data_all.rename(columns={"age_group": "Catégorie d'âge"}, inplace=True)
-
-fig = px.histogram(
-    melted_data_all,
-    x="Technology",
-    color="Frequency",
-    barmode="group",
-    pattern_shape="Catégorie d'âge",
-    title="Utilisation de la technologie par catégorie d'âge, type d'appareil et fréquence",
-    color_discrete_map=color_map,
-    category_orders=category_orders,
-)
-
-# Update the x-axis title for each subplot
-fig.update_xaxes(title_text="", tickangle=-45)
-
-fig.update_layout(yaxis_title=label_nb_characters, legend_title="Fréquence")
+    # analysis by ethnic group
+    melted_data_all = prepare_technology_data(data=df, colname_id="ethnic_origin")
+    melted_data_all.rename(columns={"ethnic_origin": "Ethnie"}, inplace=True)
 
 
-st.plotly_chart(fig)
+    fig = px.histogram(
+        melted_data_all,
+        x="Technology",
+        color="Frequency",
+        barmode="stack",
+        facet_col="Ethnie",
+        title="Utilisation de la technologie par ethnie, type d'appareil et fréquence",
+        color_discrete_map=color_map,
+        category_orders=category_orders,
+    )
+
+    # Update the x-axis title for each subplot
+    fig.update_xaxes(title_text="", tickangle=-45)
+
+    fig.update_layout(yaxis_title=label_nb_characters, legend_title="Fréquence")
+
+
+    st.plotly_chart(fig)
+
+    melted_data_all = prepare_technology_data(data=df, colname_id="age_group")
+    melted_data_all.rename(columns={"age_group": "Catégorie d'âge"}, inplace=True)
+
+    fig = px.histogram(
+        melted_data_all,
+        x="Technology",
+        color="Frequency",
+        barmode="group",
+        pattern_shape="Catégorie d'âge",
+        title="Utilisation de la technologie par catégorie d'âge, type d'appareil et fréquence",
+        color_discrete_map=color_map,
+        category_orders=category_orders,
+    )
+
+    # Update the x-axis title for each subplot
+    fig.update_xaxes(title_text="", tickangle=-45)
+
+    fig.update_layout(yaxis_title=label_nb_characters, legend_title="Fréquence")
+
+
+    st.plotly_chart(fig)
 
 # TODO Analyse des modes de vie
 
@@ -815,55 +803,57 @@ st.plotly_chart(fig)
 
 # Des enjeux écologiques et environnementaux sont-ils mentionnés au cours du récit,
 #      même brièvement ?
-response_counts = data["environmental_issues"].value_counts().reset_index()
-response_counts.columns = ["environmental_issues", "Count"]
-fig = px.pie(
-    response_counts,
-    names="environmental_issues",
-    values="Count",
-    title=("Des enjeux écologiques et environnementaux sont-ils "
-           "mentionnés au cours du récit, même brièvement ?"),
-)
-st.plotly_chart(fig)
+with st.container():
+    st.subheader("Enjeux écologiques et environnementaux")
+    response_counts = df["environmental_issues"].value_counts().reset_index()
+    response_counts.columns = ["environmental_issues", "Count"]
+    fig = px.pie(
+        response_counts,
+        names="environmental_issues",
+        values="Count",
+        title=("Des enjeux écologiques et environnementaux sont-ils "
+            "mentionnés au cours du récit, même brièvement ?"),
+    )
+    st.plotly_chart(fig)
 
 
-# Filter columns that start with 'environmental_issues'
-env_columns = data[
-    [col for col in data.columns if col.startswith("environmental_issues")]
-]
-enjeux = env_columns[env_columns["environmental_issues"] == "Oui"].drop(
-    axis=1, labels="environmental_issues",
-)
+    # Filter columns that start with 'environmental_issues'
+    env_columns = df[
+        [col for col in df.columns if col.startswith("environmental_issues")]
+    ]
+    enjeux = env_columns[env_columns["environmental_issues"] == "Oui"].drop(
+        axis=1, labels="environmental_issues",
+    )
 
-# rename columns with shorter names
-colnames = {
-    colname: extract_text_between_brackets(colname) for colname in enjeux.columns
-}
-enjeux.rename(columns=colnames, inplace=True)
+    # rename columns with shorter names
+    colnames = {
+        colname: extract_text_between_brackets(colname) for colname in enjeux.columns
+    }
+    enjeux.rename(columns=colnames, inplace=True)
 
-# Melt the DataFrame to long format
-long_format_data = enjeux.melt(var_name="Column", value_name="Value")
+    # Melt the DataFrame to long format
+    long_format_data = enjeux.melt(var_name="Column", value_name="Value")
 
-# Count the frequency of each value in each column
-value_counts = (
-    long_format_data.groupby(["Column", "Value"]).size().reset_index(name="Counts")
-)
+    # Count the frequency of each value in each column
+    value_counts = (
+        long_format_data.groupby(["Column", "Value"]).size().reset_index(name="Counts")
+    )
 
-# Pivot the data for heatmap
-heatmap_data = value_counts.pivot(
-    index="Value", columns="Column", values="Counts",
-).fillna(0)
+    # Pivot the data for heatmap
+    heatmap_data = value_counts.pivot(
+        index="Value", columns="Column", values="Counts",
+    ).fillna(0)
 
-# Create the heatmap using Plotly Express
-fig = px.imshow(
-    heatmap_data,
-    labels={"x":"Column", "y":"Value", "color":"Frequency"},
-    x=heatmap_data.columns,
-    y=heatmap_data.index,
-    title="Fréquence des mentions des enjeux écologiques selon le type d'enjeu",
-)
-fig.update_xaxes(side="bottom")  # Ensuring the x-axis labels are at the bottom
-st.plotly_chart(fig)
+    # Create the heatmap using Plotly Express
+    fig = px.imshow(
+        heatmap_data,
+        labels={"x":"Column", "y":"Value", "color":"Frequency"},
+        x=heatmap_data.columns,
+        y=heatmap_data.index,
+        title="Fréquence des mentions des enjeux écologiques selon le type d'enjeu",
+    )
+    fig.update_xaxes(side="bottom")  # Ensuring the x-axis labels are at the bottom
+    st.plotly_chart(fig)
 
 
 # Box office / récompenses obtenues par les films qui parlent d’écologie ou qui ont
@@ -881,12 +871,6 @@ st.plotly_chart(fig)
 
 
 # La biodiversité à l’écran
-
-
-# La perception des répondants
-
-
-# Influence des caractéristiques des répondants
 
 
 # La perception des répondants
