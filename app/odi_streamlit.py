@@ -897,3 +897,193 @@ st.plotly_chart(fig)
 # L’influence du profil des répondants
 # Sur les scores fournis
 # Sur le nombre de réponses type “je ne sais pas / je ne me souviens plus”
+
+# TODO Analyse des personnages renseignés
+
+# Questions:
+# Quelles sont les caractéristiques des personnages ? Qui sont-ils ? Comment vivent-ils ? 
+# Quelle est l’influence des caractéristiques du film sur les caractéristiques des personnages ?
+
+# Visualisations:
+# Nombre total de personnages renseignés 
+non_null_count_1 = data['character1_name'].notnull().sum() 
+non_null_count_2 = data['character2_name'].notnull().sum() 
+non_null_count_3 = data['character3_name'].notnull().sum() 
+non_null_count_4 = data['character4_name'].notnull().sum() 
+total_number_of_characters = non_null_count_1 ++ non_null_count_2 ++ non_null_count_3 ++ non_null_count_4
+print ("Le nombre total des peronnage s'agit de",total_number_of_characters)
+
+# Nombre moyen de personnages par film
+# En cas de contenus identiques, identification des désignations identiques et 
+#       comparaison des divergences dans les répon
+# Répartitions:
+
+# Tranches d’âges
+# Melanger les differentes characteres
+blended_column = [val for pair in zip(data['character2_age_group'], data['character4_age_group']) for val in pair]
+data["Age"] = pd.DataFrame(blended_column)
+print(data["Age"])
+
+#creer une treemap
+st.plotly_chart(fig)
+
+fig = px.treemap(data, path=[data["Age"]],hover_data=[data["Age"]], color= data["Age"],color_discrete_map = {
+    "Adolescent": "#86b4b4",
+    "Jeune adulte (moins de 30 ans)":"0b5773",
+    "Adulte (30 - 50 ans)": "#58949f",
+    "Senior (plus de 50 ans)": "0a3555",
+    "Plus de 70 ans": "#101727",
+},
+                 title="Répartition de l'age des personnages"
+                 )
+fig.update_traces(marker=dict(cornerradius=5))
+
+fig.update_layout(
+    margin = dict(t=50, l=25, r=25, b=25),
+    title_font=dict(size=30),
+    title_x=0.04, title_y=0.95
+)
+
+#mettre en commenteire pour voir les infos comme "count" en hover
+fig.data[0].hovertemplate='<b></b>%{label}'
+
+fig.show()
+
+# Genre
+# Melanger les differentes characteres
+blended_column = [val for quad in zip(data['character1_gender'], data['character2_gender'],data['character3_gender'],data['character4_gender']) for val in quad]
+data["Gender"] = pd.DataFrame(blended_column)
+print(data["Gender"])
+
+# Remplacer NaN avec None pour data["Ethnicites"]
+data["Gender"]= data["Gender"].fillna(value=None, method="ffill")
+
+st.plotly_chart(fig)
+
+fig = px.treemap(data, path=["Gender"],
+                 title="Répartition du genre des personnages", color_discrete_sequence=["#e44f43","#0b5773","#7bc0ac","#d3c922"]
+                 )
+fig.update_traces(marker=dict(cornerradius=5))
+
+fig.update_layout(
+    margin = dict(t=50, l=25, r=25, b=25),
+    title_font=dict(size=30),
+    title_x=0.04, title_y=0.95
+)
+#mettre en commenteire pour voir les infos comme "count" en hover
+fig.data[0].hovertemplate='<b></b>%{label}'
+
+
+# Corrélations:
+# Possibilité de corréler chacun des 5 paramètres au 4 autres (genre vs âge etc.)
+# Create a cross-tabulation
+ct = pd.crosstab(data["Age"], data["Gender"])
+
+# Generate a heatmap
+fig = px.imshow(
+    ct,
+    text_auto=True,
+    aspect="auto",
+    labels=dict(x="", y="", color=""),
+    title="Age vs Gendre",
+    color_continuous_scale='Bluyl'
+)
+
+# Update layout for clarity
+fig.update_layout(
+    margin = dict(t=50, l=25, r=25, b=50),
+    title_font=dict(size=30),
+    title_x=0.4, title_y=0.97
+)
+
+# Display the plot
+fig.show()
+
+# Ethnicités
+# Melanger les differentes characteres
+blended_column = [val for quad in zip(data['character1_ethnic_origin'], data['character2_ethnic_origin'],data['character3_ethnic_origin'],data['character4_ethnic_origin']) for val in quad]
+data["Ethnicites"] = pd.DataFrame(blended_column)
+print(data["Ethnicites"])
+# Remplacer NaN avec None pour data["Ethnicites"]
+data["Ethnicites"]= data["Ethnicites"].fillna(value=None, method="ffill")
+
+#creer treemap
+st.plotly_chart(fig)
+
+fig = px.treemap(data, path=[data["Ethnicites"]],
+                 title="Répartition de l'ethnicités des personnages",color_discrete_sequence=["#e44f43","#0b5773", 
+                     ]
+                 )
+fig.update_traces(marker=dict(cornerradius=5))
+
+fig.update_layout(
+    margin = dict(t=50, l=25, r=25, b=25),
+    title_font=dict(size=30),
+    title_x=0.04, title_y=0.95
+)
+#mettre en commenteire pour voir les infos comme "count" en hover
+fig.data[0].hovertemplate='<b></b>%{label}'
+
+fig.show()
+# Gentil ou méchant
+# Melanger les differentes characteres
+blended_column = [val for quad in zip(data['character1_sentiment'], data['character2_sentiment'],data['character3_sentiment'],data['character1_sentiment']) for val in quad]
+data["Sentiment"] = pd.DataFrame(blended_column)
+print(data["Sentiment"])
+
+# Remplacer NaN avec None pour data["Ethnicites"]
+data["Sentiment"]= data["Sentiment"].fillna(value=None, method="ffill")
+
+#creer treemap
+st.plotly_chart(fig)
+
+fig = px.treemap(data, path=["Sentiment"],color= data["Sentiment"], color_discrete_map = {
+    "Positive": "#0b5773",
+    "Négative":"#d35a4b",
+    "Neutre": "#7bc0ac",
+    "C'est compliqué": "#d3c922",
+},
+                 title="Répartition des sentiments envers les personnages"
+                 )
+fig.update_traces(marker=dict(cornerradius=5))
+
+fig.update_layout(
+    margin = dict(t=50, l=25, r=25, b=25),
+    title_font=dict(size=30),
+    title_x=0.04, title_y=0.95
+)
+#mettre en commenteire pour voir les infos comme "count" en hover
+fig.data[0].hovertemplate='<b></b>%{label}'
+
+fig.show()
+
+
+# Principal ou secondaire
+# Melanger les differentes characteres
+blended_column = [val for quad in zip(data['character1_importance'], data['character2_importance'],data['character3_importance'],data['character1_importance']) for val in quad]
+data["Importance"] = pd.DataFrame(blended_column)
+print(data["Importance"])
+
+# Remplacer NaN avec None pour data["Ethnicites"]
+data["Importance"]= data["Importance"].fillna(value=None, method="ffill")
+
+st.plotly_chart(fig)
+
+fig = px.treemap(data, path=["Importance"], color_discrete_sequence = ["#0b5773","#0a3555","#101727"],
+                 title="Importance des personnages",
+                 )
+fig.update_traces(marker=dict(cornerradius=5))
+
+fig.update_layout(
+    margin = dict(t=50, l=25, r=25, b=25),
+    title_font=dict(size=30),
+    title_x=0.04, title_y=0.95
+)
+#mettre en commenteire pour voir les infos comme "count" en hover
+fig.data[0].hovertemplate='<b></b>%{label}'
+
+fig.show()
+
+
+# Possibilité de corréler chacun des 5 paramètres 
+#        à nationalité du film / date du film / producteur / genre du film
