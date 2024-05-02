@@ -886,17 +886,25 @@ with st.container():
 # Questions:
 # Quelles sont les caractéristiques des personnages ? Qui sont-ils ? Comment vivent-ils ? 
 # Quelle est l’influence des caractéristiques du film sur les caractéristiques des personnages ?
+    
 
 # Visualisations:
 # Nombre total de personnages renseignés 
-non_null_count_1 = data['character1_name'].notnull().sum() 
-non_null_count_2 = data['character2_name'].notnull().sum() 
-non_null_count_3 = data['character3_name'].notnull().sum() 
-non_null_count_4 = data['character4_name'].notnull().sum() 
-total_number_of_characters = non_null_count_1 ++ non_null_count_2 ++ non_null_count_3 ++ non_null_count_4
-print ("Le nombre total des peronnage s'agit de",total_number_of_characters)
+blended_column = [val for pair in zip(data['character1_name'], data['character2_name'],data['character3_name'],data['character4_name']) for val in pair]
+data["all_characters"] = pd.DataFrame(blended_column)
 
-# Nombre moyen de personnages par film
+    ### A. Affichage des métriques macro
+col_nb_oeuvre_analyse, col_nb_moyen_pers = st.columns([2, 2])
+with col_nb_oeuvre_analyse:
+        # Metric nb personnages renseignés
+        st.metric(label="Personnages renseignés", value=len(set(data["all_characters"])))
+with col_nb_moyen_pers:
+        # Metric Nombre moyen de personnage par film/série
+        value_title=(data["TITRE"].count())
+        value_pers=(data["all_characters"].count())
+        st.metric(label="Nombre moyen de personnage par film/série", 
+                  value=(value_title/value_pers).round(1))
+
 # En cas de contenus identiques, identification des désignations identiques et 
 #       comparaison des divergences dans les répon
 # Répartitions:
@@ -908,7 +916,6 @@ data["Age"] = pd.DataFrame(blended_column)
 print(data["Age"])
 
 #creer une treemap
-st.plotly_chart(fig)
 
 fig = px.treemap(data, path=[data["Age"]],hover_data=[data["Age"]], color= data["Age"],color_discrete_map = {
     "Adolescent": "#86b4b4",
@@ -929,8 +936,7 @@ fig.update_layout(
 
 #mettre en commenteire pour voir les infos comme "count" en hover
 fig.data[0].hovertemplate='<b></b>%{label}'
-
-fig.show()
+st.plotly_chart(fig)
 
 # Genre
 # Melanger les differentes characteres
@@ -941,7 +947,6 @@ print(data["Gender"])
 # Remplacer NaN avec None pour data["Ethnicites"]
 data["Gender"]= data["Gender"].fillna(value=None, method="ffill")
 
-st.plotly_chart(fig)
 
 fig = px.treemap(data, path=["Gender"],
                  title="Répartition du genre des personnages", color_discrete_sequence=["#e44f43","#0b5773","#7bc0ac","#d3c922"]
@@ -955,7 +960,7 @@ fig.update_layout(
 )
 #mettre en commenteire pour voir les infos comme "count" en hover
 fig.data[0].hovertemplate='<b></b>%{label}'
-
+st.plotly_chart(fig)
 
 # Corrélations:
 # Possibilité de corréler chacun des 5 paramètres au 4 autres (genre vs âge etc.)
@@ -968,7 +973,7 @@ fig = px.imshow(
     text_auto=True,
     aspect="auto",
     labels=dict(x="", y="", color=""),
-    title="Age vs Gendre",
+    title="Age vs Genre",
     color_continuous_scale='Bluyl'
 )
 
@@ -978,9 +983,7 @@ fig.update_layout(
     title_font=dict(size=30),
     title_x=0.4, title_y=0.97
 )
-
-# Display the plot
-fig.show()
+st.plotly_chart(fig)
 
 # Ethnicités
 # Melanger les differentes characteres
@@ -991,8 +994,6 @@ print(data["Ethnicites"])
 data["Ethnicites"]= data["Ethnicites"].fillna(value=None, method="ffill")
 
 #creer treemap
-st.plotly_chart(fig)
-
 fig = px.treemap(data, path=[data["Ethnicites"]],
                  title="Répartition de l'ethnicités des personnages",color_discrete_sequence=["#e44f43","#0b5773", 
                      ]
@@ -1006,8 +1007,8 @@ fig.update_layout(
 )
 #mettre en commenteire pour voir les infos comme "count" en hover
 fig.data[0].hovertemplate='<b></b>%{label}'
+st.plotly_chart(fig)
 
-fig.show()
 # Gentil ou méchant
 # Melanger les differentes characteres
 blended_column = [val for quad in zip(data['character1_sentiment'], data['character2_sentiment'],data['character3_sentiment'],data['character1_sentiment']) for val in quad]
@@ -1018,7 +1019,6 @@ print(data["Sentiment"])
 data["Sentiment"]= data["Sentiment"].fillna(value=None, method="ffill")
 
 #creer treemap
-st.plotly_chart(fig)
 
 fig = px.treemap(data, path=["Sentiment"],color= data["Sentiment"], color_discrete_map = {
     "Positive": "#0b5773",
@@ -1037,9 +1037,7 @@ fig.update_layout(
 )
 #mettre en commenteire pour voir les infos comme "count" en hover
 fig.data[0].hovertemplate='<b></b>%{label}'
-
-fig.show()
-
+st.plotly_chart(fig)
 
 # Principal ou secondaire
 # Melanger les differentes characteres
@@ -1049,8 +1047,6 @@ print(data["Importance"])
 
 # Remplacer NaN avec None pour data["Ethnicites"]
 data["Importance"]= data["Importance"].fillna(value=None, method="ffill")
-
-st.plotly_chart(fig)
 
 fig = px.treemap(data, path=["Importance"], color_discrete_sequence = ["#0b5773","#0a3555","#101727"],
                  title="Importance des personnages",
@@ -1064,8 +1060,53 @@ fig.update_layout(
 )
 #mettre en commenteire pour voir les infos comme "count" en hover
 fig.data[0].hovertemplate='<b></b>%{label}'
+st.plotly_chart(fig)
 
-fig.show()
+# Create a cross-tabulation
+ct = pd.crosstab(data["Importance"], data["Gender"])
+
+# Generate a heatmap
+
+fig = px.imshow(
+    ct,
+    text_auto=True,
+    aspect="auto",
+    labels=dict(x="", y="", color=""),
+    title="Importance vs Genre",
+    color_continuous_scale='Bluyl'
+)
+
+# Update layout for clarity
+fig.update_layout(
+    margin = dict(t=50, l=25, r=25, b=50),
+    title_font=dict(size=30),
+    title_x=0.11, title_y=0.97
+)
+st.plotly_chart(fig)
+
+# Create a cross-tabulation
+ct = pd.crosstab(data["Importance"], data["Ethnicites"])
+
+# Generate a heatmap
+
+fig = px.imshow(
+    ct,
+    text_auto=True,
+    aspect="auto",
+    labels=dict(x="", y="", color=""),
+    title="Importance vs Ethnicites",
+    color_continuous_scale='Bluyl'
+)
+
+# Update layout for clarity
+fig.update_layout(
+    margin = dict(t=50, l=25, r=25, b=50),
+    title_font=dict(size=30),
+    title_x=0.11, title_y=0.97
+)
+
+# Display the plot
+st.plotly_chart(fig)
 
 
 # Possibilité de corréler chacun des 5 paramètres 
