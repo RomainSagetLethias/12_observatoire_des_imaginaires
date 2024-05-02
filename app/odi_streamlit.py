@@ -890,7 +890,9 @@ with st.container():
 
 # Visualisations:
 # Nombre total de personnages renseignés 
-blended_column = [val for pair in zip(data['character1_name'], data['character2_name'],data['character3_name'],data['character4_name']) for val in pair]
+blended_column = [val for pair in zip(data['character1_name'], 
+                                      data['character2_name'],data['character3_name'],
+                                      data['character4_name']) for val in pair]
 data["all_characters"] = pd.DataFrame(blended_column)
 
     ### A. Affichage des métriques macro
@@ -911,13 +913,15 @@ with col_nb_moyen_pers:
 
 # Tranches d’âges
 # Melanger les differentes characteres
-blended_column = [val for pair in zip(data['character2_age_group'], data['character4_age_group']) for val in pair]
+blended_column = [val for pair in zip(data['character2_age_group'], 
+                                      data['character4_age_group']) for val in pair]
 data["Age"] = pd.DataFrame(blended_column)
 print(data["Age"])
 
 #creer une treemap
 
-fig = px.treemap(data, path=[data["Age"]],hover_data=[data["Age"]], color= data["Age"],color_discrete_map = {
+fig = px.treemap(data, path=[data["Age"]],hover_data=[data["Age"]], 
+                 color= data["Age"],color_discrete_map = {
     "Adolescent": "#86b4b4",
     "Jeune adulte (moins de 30 ans)":"0b5773",
     "Adulte (30 - 50 ans)": "#58949f",
@@ -940,7 +944,10 @@ st.plotly_chart(fig)
 
 # Genre
 # Melanger les differentes characteres
-blended_column = [val for quad in zip(data['character1_gender'], data['character2_gender'],data['character3_gender'],data['character4_gender']) for val in quad]
+blended_column = [val for quad in zip(data['character1_gender'], 
+                                      data['character2_gender'],
+                                      data['character3_gender'],
+                                      data['character4_gender']) for val in quad]
 data["Gender"] = pd.DataFrame(blended_column)
 print(data["Gender"])
 
@@ -949,7 +956,8 @@ data["Gender"]= data["Gender"].fillna(value=None, method="ffill")
 
 
 fig = px.treemap(data, path=["Gender"],
-                 title="Répartition du genre des personnages", color_discrete_sequence=["#e44f43","#0b5773","#7bc0ac","#d3c922"]
+                 title="Répartition du genre des personnages", 
+                 color_discrete_sequence=["#e44f43","#0b5773","#7bc0ac","#d3c922"]
                  )
 fig.update_traces(marker=dict(cornerradius=5))
 
@@ -987,7 +995,10 @@ st.plotly_chart(fig)
 
 # Ethnicités
 # Melanger les differentes characteres
-blended_column = [val for quad in zip(data['character1_ethnic_origin'], data['character2_ethnic_origin'],data['character3_ethnic_origin'],data['character4_ethnic_origin']) for val in quad]
+blended_column = [val for quad in zip(data['character1_ethnic_origin'], 
+                                      data['character2_ethnic_origin'],
+                                      data['character3_ethnic_origin'],
+                                      data['character4_ethnic_origin']) for val in quad]
 data["Ethnicites"] = pd.DataFrame(blended_column)
 print(data["Ethnicites"])
 # Remplacer NaN avec None pour data["Ethnicites"]
@@ -995,7 +1006,8 @@ data["Ethnicites"]= data["Ethnicites"].fillna(value=None, method="ffill")
 
 #creer treemap
 fig = px.treemap(data, path=[data["Ethnicites"]],
-                 title="Répartition de l'ethnicités des personnages",color_discrete_sequence=["#e44f43","#0b5773", 
+                 title="Répartition de l'ethnicités des personnages",
+                 color_discrete_sequence=["#e44f43","#0b5773", 
                      ]
                  )
 fig.update_traces(marker=dict(cornerradius=5))
@@ -1011,7 +1023,10 @@ st.plotly_chart(fig)
 
 # Gentil ou méchant
 # Melanger les differentes characteres
-blended_column = [val for quad in zip(data['character1_sentiment'], data['character2_sentiment'],data['character3_sentiment'],data['character1_sentiment']) for val in quad]
+blended_column = [val for quad in zip(data['character1_sentiment'], 
+                                      data['character2_sentiment'],
+                                      data['character3_sentiment'],
+                                      data['character1_sentiment']) for val in quad]
 data["Sentiment"] = pd.DataFrame(blended_column)
 print(data["Sentiment"])
 
@@ -1020,7 +1035,8 @@ data["Sentiment"]= data["Sentiment"].fillna(value=None, method="ffill")
 
 #creer treemap
 
-fig = px.treemap(data, path=["Sentiment"],color= data["Sentiment"], color_discrete_map = {
+fig = px.treemap(data, path=["Sentiment"],color= data["Sentiment"], 
+                 color_discrete_map = {
     "Positive": "#0b5773",
     "Négative":"#d35a4b",
     "Neutre": "#7bc0ac",
@@ -1041,7 +1057,10 @@ st.plotly_chart(fig)
 
 # Principal ou secondaire
 # Melanger les differentes characteres
-blended_column = [val for quad in zip(data['character1_importance'], data['character2_importance'],data['character3_importance'],data['character1_importance']) for val in quad]
+blended_column = [val for quad in zip(data['character1_importance'], 
+                                      data['character2_importance'],
+                                      data['character3_importance'],
+                                      data['character1_importance']) for val in quad]
 data["Importance"] = pd.DataFrame(blended_column)
 print(data["Importance"])
 
