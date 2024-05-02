@@ -33,3 +33,7 @@ def update_movies_dataset(c: Context) -> None:
 @task
 def clean_branches(c: Context) -> None:
     c.run("git branch --merged | grep -v '\\*\\|main' | xargs -n 1 git branch -d")
+
+@task
+def streamlit(c: Context) -> None:
+    c.run("streamlit run app/odi_streamlit.py ")
