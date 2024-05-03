@@ -26,6 +26,7 @@ streamlit-option-menu = "^0.3.12"
 bs4 = "^0.0.2"
 python-dotenv = "^1.0.1"
 datasets = "^2.18.0"
+pycountry-convert = "^0.7.2"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^2.20.0"
@@ -67,7 +68,7 @@ select = [
     "W",
     "YTT",
 ]
-ignore = ["A003", "ANN101", "ANN401", "N805", "N818", "PLR0913", "RET504", "RET505"]
+ignore = ["A003", "ANN101", "ANN401", "N805", "N818", "PLR0913", "RET504", "RET505", "C408"]
 
 fixable = [
     "A",

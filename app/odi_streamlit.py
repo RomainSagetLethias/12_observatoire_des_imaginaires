@@ -35,10 +35,16 @@ def load_data(file: str) -> pd.DataFrame:
     return df
 
 # TODO connect to Google Sheet and load data
-file_path = ("https://raw.githubusercontent.com/dataforgoodfr/"
-             "12_observatoire_des_imaginaires/analyse/streamlit_app_v2/"
-             "data/Etape%201%20Identification%20du%20film%20-%20Feuille%201%20-%20enrichi.csv")
-data = load_data(file_path)
+file_path = "./data/Etape 1 Identification du film - Feuille 1 - enrichi.csv"
+#("https://raw.githubusercontent.com/dataforgoodfr/"
+# "12_observatoire_des_imaginaires/analyse/streamlit_app_v2/"
+# "data/Etape%201%20Identification%20du%20film%20-%20Feuille%201%20-%20enrichi.csv")
+#"data/Etape 1 Identification du film - Feuille 1 - enrichi.csv"
+
+if "data" not in st.session_state:
+    st.session_state["data"] = load_data(file_path)
+
+data = st.session_state["data"]
 
 # Renommer les noms de colonnes (utile si le fichier d'entrée change de noms de colonnes)
 # Renommer la colonne title -> TITRE
@@ -74,27 +80,15 @@ cont_metric = st.container()
 df = data.dropna(how="all")
 
 # Nettoyage du data set
+
 # mettre les titres en majuscule
 df["TITRE"] = df["TITRE"].str.upper()
-# mettre les pays en majuscule et supprimer les espaces au début et à la fin
-df["production_countries"] = df["production_countries"].str.upper()
-df.insert(
-    311,  # TODO why 311?  Shouldn't we just append the column to the data frame?
-    "pays_rework",
-    [
-        pays if len(pays.split(";")) == 1 else "INTERNATIONAL"
-        for pays in df["production_countries"]
-    ],
-)
-
-### Convertir les types de données correctement ici
 # Convertir les années en entier
 annee = "release_year"
 df[annee] = pd.to_numeric(df[annee], errors="coerce").fillna(0).astype(int)
 
-
 with cont_metric:
-    with st.expander("Aperçu des donnéess"):
+    with st.expander("Aperçu des données"):
         st.dataframe(df)
         if (debug):
             st.write(list(df.columns))
@@ -173,109 +167,136 @@ with st.container():
 # Types de contenus et pays d'origine
 with st.container():
     st.subheader("Types de contenus")
-    col_contenu_date, col_contenu_vide, col_contenu_graph = st.columns([4, 0.5, 4])
 
-    with col_contenu_date:
-        date_group_df = (
-            df.groupby("release_year")
-            .count()
-            .reset_index()[["release_year", "TITRE"]]
-            .rename(columns={"TITRE": "nb_titre"})
+    date_group_df = (
+        df.groupby("release_year")
+        .count()
+        .reset_index()[["release_year", "TITRE"]]
+        .rename(columns={"TITRE": "nb_titre"})
         )
-        date_group_df["periode_percent"] = 100 * (
-            1 - (date_group_df.nb_titre.cumsum() / date_group_df.nb_titre.sum())
+    date_group_df["periode_percent"] = 100 * (
+        1 - (date_group_df.nb_titre.cumsum() / date_group_df.nb_titre.sum())
         )
 
-        date_min = str(df.release_year.min())
-        date_max = str(df.release_year.max())
-        date_pareto = date_group_df[date_group_df["periode_percent"] <= 80][ # noqa: PLR2004
-            "release_year"
-        ].min()
-        date_value_pareto = int(
-            round(
-                date_group_df[date_group_df["periode_percent"] <= 80][  # noqa: PLR2004
-                    "periode_percent"
-                ].max(),
-                0,
+    date_min = str(df.release_year.min())
+    date_max = str(df.release_year.max())
+    date_pareto = date_group_df[date_group_df["periode_percent"] <= 80][ # noqa: PLR2004
+                                                                        "release_year"].min()
+
+    date_value_pareto = int(
+        round(
+            date_group_df[date_group_df["periode_percent"] <= 80][  # noqa: PLR2004
+                                                                  "periode_percent"
+                                                                  ].max(),0),
+        )
+
+    st.markdown(
+        (f"Les contenus datent d'une période qui s'étend de **:blue[{date_min}]**"
+         f" à **:blue[{date_max}]**. **:blue[{date_value_pareto}%]** des contenus \
+             sont postérieurs à"
+         f" **:blue[{date_pareto}]**."
+         ),
+        )
+
+st.bar_chart(date_group_df, x="release_year", y="nb_titre")
+
+with st.container(border=True):
+    st.subheader("Nationalité des contenus")
+    col_pays, col_contenu_vide, col_pays_annee = st.columns([4, 0.5, 4])
+
+    country_group_df = df
+    country_group_df = (
+        country_group_df.groupby("pays_rework")
+        .count()
+        .reset_index()[["pays_rework", "TITRE"]]
+        .rename(columns={"TITRE": "nb_titre"})
+        .sort_values("nb_titre")
+        )
+    country_group_df["country_percent_cumul"] = round(
+        100
+        * (
+            1
+            - (country_group_df.nb_titre.cumsum() / country_group_df.nb_titre.sum())
             ),
+        0,
+        )
+    country_group_df["country_percent"] = round(
+        100 * (country_group_df.nb_titre / country_group_df.nb_titre.sum()),
+        2,
         )
 
-        st.markdown(
-            (
-                f"Les contenus datent d'une période qui s'étend de {date_min}"
-                f" à {date_max}. {date_value_pareto}% des contenus sont postérieurs à"
-                f" {date_pareto}."
-            ),
-        )
-
-        st.bar_chart(date_group_df, x="release_year", y="nb_titre")
-
-    with col_contenu_graph:
-        country_group_df = df
-        country_group_df = (
-            country_group_df.groupby("pays_rework")
-            .count()
-            .reset_index()[["pays_rework", "TITRE"]]
-            .rename(columns={"TITRE": "nb_titre"})
-            .sort_values("nb_titre")
-        )
-        country_group_df["country_percent_cumul"] = round(
-            100
-            * (
-                1
-                - (country_group_df.nb_titre.cumsum() / country_group_df.nb_titre.sum())
-            ),
-            0,
-        )
-        country_group_df["country_percent"] = round(
-            100 * (country_group_df.nb_titre / country_group_df.nb_titre.sum()),
-            2,
-        )
-
-        country_value_pareto = int(
-            round(
-                country_group_df[
-                    country_group_df["country_percent"] >= 10 # noqa: PLR2004
+    country_value_pareto = int(
+        round(
+            country_group_df[
+                country_group_df["country_percent"] >= 10 # noqa: PLR2004
                 ][
                     "country_percent"
-                ].sum(),
+                    ].sum(),
                 2,
-            ),
+                ),
         )
-        country_group_df_pareto = country_group_df[
-            country_group_df["country_percent"] >= 10  # noqa: PLR2004
+    country_group_df_pareto = country_group_df[
+        country_group_df["country_percent"] >= 10  # noqa: PLR2004
         ][["pays_rework", "country_percent"]].sort_values(
             "country_percent",
             ascending=False,
+            )
+
+    # Pre-calculate the two largest values
+    top_countries_df = country_group_df.nlargest(2,"country_percent").reset_index(drop=True)
+
+    # Extract country names and percentages for readability
+    country1_name = top_countries_df["pays_rework"][0].capitalize()
+    country1_percent = top_countries_df["country_percent"][0]
+    country2_name = top_countries_df["pays_rework"][1].capitalize()
+    country2_percent = top_countries_df["country_percent"][1]
+
+    # Format the output string
+    output_string = (
+        f"A **:blue[{country_value_pareto}%]**, les 2 principaux pays dont les contenus "
+        f"sont les plus visionnés sont : {country1_name} ({country1_percent}%) et "
+        f"{country2_name} ({country2_percent}%)."
         )
 
-        # Pre-calculate the two largest values
-        top_countries_df = country_group_df.nlargest(2,"country_percent").reset_index(drop=True)
+    st.write(output_string)
 
-        # Extract country names and percentages for readability
-        country1_name = top_countries_df["pays_rework"][0].capitalize()
-        country1_percent = top_countries_df["country_percent"][0]
-        country2_name = top_countries_df["pays_rework"][1].capitalize()
-        country2_percent = top_countries_df["country_percent"][1]
-
-        # Format the output string
-        output_string = (
-            f"A **:blue[{country_value_pareto}%]**, les 2 principaux pays dont les contenus "
-            f"sont les plus visionnés sont : {country1_name} ({country1_percent}%) et "
-            f"{country2_name} ({country2_percent}%)."
-        )
-
-        st.write(output_string)
-
-
-        fig_type = px.bar(
+    with col_pays :
+        fig_pays = px.bar(
             country_group_df,
             y="pays_rework",
             x="nb_titre",
             orientation="h",
             text_auto=True,
-        )
-        st.plotly_chart(fig_type, use_container_width=True)
+            )
+        st.plotly_chart(fig_pays, use_container_width=True)
+
+    with col_pays_annee:
+        country_group_df_rework = df.groupby(["pays_rework",
+                    "production_countries",
+                    "release_year"]).count().reset_index()[["pays_rework",
+                    "production_countries",
+                    "release_year",
+                    "TITRE"]].rename(columns={"TITRE": "Nb_titres",
+                                              "production_countries": "Pays",
+                                              "release_year":"Année de sortie" })
+
+        country_group_df_rework["Année de sortie"] = \
+            country_group_df_rework["Année de sortie"].astype("str")
+
+        fig_pays_annee = px.bar(country_group_df_rework.sort_values(["Année de sortie"]),
+                                y="pays_rework",
+                                x="Nb_titres",
+                                color="Année de sortie",
+                                orientation="h",
+                                color_discrete_map={
+                                    "1997": "#E44F43",
+                                    "2024": "#0B5773",
+                                    "2022": "#7BC0AC",
+                                    "2023": "#D3C922"},
+                                text_auto=True,
+                                hover_data={"pays_rework":False,
+                                            "Année de sortie":True, "Pays":True})
+        st.plotly_chart(fig_pays_annee, use_container_width=True)
 
 # LIEUX VISIONNAGE
 with st.container():
@@ -431,9 +452,12 @@ with st.container():
 
 with st.container():
     st.subheader("Récompenses")
+
+    col_choix_annee, col_award_graph = st.columns([4, 6])
+
     # Préparation du dataframe pour les films
     award_df = df[
-        ["id_tmdb", "TITRE", "TYPE", "nb_recompense", "liste_festival"]
+        ["id_tmdb", "TITRE", "TYPE", "nb_recompense", "liste_festival","release_year"]
     ].drop_duplicates()
 
     liste_award_cine = list({p
@@ -442,17 +466,25 @@ with st.container():
     if (debug):
         st.write(liste_award_cine)
 
+    list_year = award_df["release_year"].sort_values().unique()
+
+    with col_choix_annee :
+        start_clr, end_clr = st.select_slider("Choisir la/les date(s) d'analyse",
+                        options=list_year, value=(min(list_year), max(list_year)))
+
+
     # je conmpte le nombre de films par récompense
     award_df = pd.concat([award_df, pd.DataFrame(columns=liste_award_cine)])
     for col in liste_award_cine:
-        award_df[col] = [
-            1 if col in str(a).split(",") else 0 for a in award_df["liste_festival"]
-        ]
+        award_df[col] = [1 if col in str(a).split(",")\
+            else 0 for a in award_df["liste_festival"]]
 
     # j'ajoute une colonne qui fait la somme des films pour une récompense donnés
     # et ajoute le type pour cette nouvelle ligne
     total_film_award = dict(
-        award_df.loc[award_df["TYPE"] == "FILM"][liste_award_cine].sum(),
+        award_df.loc[(award_df["TYPE"] == "FILM")&\
+            (award_df.release_year >= start_clr) & \
+                (award_df.release_year <= end_clr)][liste_award_cine].sum(),
     )
 
     total_film_award = (
@@ -461,11 +493,11 @@ with st.container():
         .rename(columns={0: "total_film", "index": "liste_festival"})
     )
     total_film_award.insert(2, "TYPE", "FILM")
-    st.dataframe(total_film_award)
 
-    get_chart_82052330(
-        total_film_award, liste_award_cine, "Répartition des récompenses",
-    )
+    with col_award_graph :
+        get_chart_82052330(
+            total_film_award, liste_award_cine,
+            f"Répartition des récompenses de {start_clr} à {end_clr}")
 
 st.divider()
 
@@ -477,14 +509,14 @@ st.divider()
 
 # Visualisations
 # TODO Nombre de réponses au questionnaire
-# Nombre de films uniques
-# Nombre, titre et fréquence des contenus non-uniques
-# Répartition des nationalités
-# Répartition des producteurs
+# Nombre de films uniques - ok
+# Nombre, titre et fréquence des contenus non-uniques - ok
+# Répartition des nationalités - ok
+# Répartition des producteurs - ok
 # Répartition des années de sortie
 # Répartition des canaux de diffusion
-# Répartition des genres (uniques)
-# Répartition des producteurs
+# Répartition des genres (uniques) - ok
+# Répartition des producteurs - déjà ok
 # Nombre de films pour chaque type de récompense documentées
 #                      (Césars, Cannes, Oscars…) / par année de sortie
 # Année de sortie en fonction de nationalité
@@ -884,59 +916,64 @@ with st.container():
 # TODO Analyse des personnages renseignés
 
 # Questions:
-# Quelles sont les caractéristiques des personnages ? Qui sont-ils ? Comment vivent-ils ? 
+# Quelles sont les caractéristiques des personnages ? Qui sont-ils ? Comment vivent-ils ?
 # Quelle est l’influence des caractéristiques du film sur les caractéristiques des personnages ?
 
 # Visualisations:
-# Nombre total de personnages renseignés 
-non_null_count_1 = data['character1_name'].notnull().sum() 
-non_null_count_2 = data['character2_name'].notnull().sum() 
-non_null_count_3 = data['character3_name'].notnull().sum() 
-non_null_count_4 = data['character4_name'].notnull().sum() 
-total_number_of_characters = non_null_count_1 ++ non_null_count_2 ++ non_null_count_3 ++ non_null_count_4
-print ("Le nombre total des peronnage s'agit de",total_number_of_characters)
+# Nombre total de personnages renseignés
+non_null_count_1 = data["character1_name"].notnull().sum()
+non_null_count_2 = data["character2_name"].notnull().sum()
+non_null_count_3 = data["character3_name"].notnull().sum()
+non_null_count_4 = data["character4_name"].notnull().sum()
+total_number_of_characters = non_null_count_1 ++ non_null_count_2\
+    ++ non_null_count_3 ++ non_null_count_4
+st.write("Le nombre total des peronnage s'agit de",total_number_of_characters)
 
 # Nombre moyen de personnages par film
-# En cas de contenus identiques, identification des désignations identiques et 
+# En cas de contenus identiques, identification des désignations identiques et
 #       comparaison des divergences dans les répon
 # Répartitions:
 
 # Tranches d’âges
 # Melanger les differentes characteres
-blended_column = [val for pair in zip(data['character2_age_group'], data['character4_age_group']) for val in pair]
+blended_column = [val for pair in zip(data["character2_age_group"],
+                data["character4_age_group"], strict=False) for val in pair]
 data["Age"] = pd.DataFrame(blended_column)
-print(data["Age"])
+st.write(data["Age"])
 
 #creer une treemap
 st.plotly_chart(fig)
 
-fig = px.treemap(data, path=[data["Age"]],hover_data=[data["Age"]], color= data["Age"],color_discrete_map = {
+fig = px.treemap(data, path=[data["Age"]],hover_data=[data["Age"]],
+                 color= data["Age"],color_discrete_map = {
     "Adolescent": "#86b4b4",
     "Jeune adulte (moins de 30 ans)":"0b5773",
     "Adulte (30 - 50 ans)": "#58949f",
     "Senior (plus de 50 ans)": "0a3555",
     "Plus de 70 ans": "#101727",
 },
-                 title="Répartition de l'age des personnages"
+                 title="Répartition de l'age des personnages",
                  )
-fig.update_traces(marker=dict(cornerradius=5))
+fig.update_traces(marker={"cornerradius": 5})
 
 fig.update_layout(
-    margin = dict(t=50, l=25, r=25, b=25),
-    title_font=dict(size=30),
-    title_x=0.04, title_y=0.95
+    margin = {"t": 50, "l": 25, "r": 25, "b": 25},
+    title_font={"size": 30},
+    title_x=0.04, title_y=0.95,
 )
 
 #mettre en commenteire pour voir les infos comme "count" en hover
-fig.data[0].hovertemplate='<b></b>%{label}'
+fig.data[0].hovertemplate="<b></b>%{label}"
 
-fig.show()
+st.plotly_chart(fig)
 
 # Genre
 # Melanger les differentes characteres
-blended_column = [val for quad in zip(data['character1_gender'], data['character2_gender'],data['character3_gender'],data['character4_gender']) for val in quad]
+blended_column = [val for quad in zip(data["character1_gender"],
+                    data["character2_gender"],data["character3_gender"],
+                    data["character4_gender"], strict=False) for val in quad]
 data["Gender"] = pd.DataFrame(blended_column)
-print(data["Gender"])
+st.write(data["Gender"])
 
 # Remplacer NaN avec None pour data["Ethnicites"]
 data["Gender"]= data["Gender"].fillna(value=None, method="ffill")
@@ -944,17 +981,18 @@ data["Gender"]= data["Gender"].fillna(value=None, method="ffill")
 st.plotly_chart(fig)
 
 fig = px.treemap(data, path=["Gender"],
-                 title="Répartition du genre des personnages", color_discrete_sequence=["#e44f43","#0b5773","#7bc0ac","#d3c922"]
+                 title="Répartition du genre des personnages",
+                 color_discrete_sequence=["#e44f43","#0b5773","#7bc0ac","#d3c922"],
                  )
-fig.update_traces(marker=dict(cornerradius=5))
+fig.update_traces(marker={"cornerradius": 5})
 
 fig.update_layout(
-    margin = dict(t=50, l=25, r=25, b=25),
-    title_font=dict(size=30),
-    title_x=0.04, title_y=0.95
+    margin = {"t": 50, "l": 25, "r": 25, "b": 25},
+    title_font={"size": 30},
+    title_x=0.04, title_y=0.95,
 )
 #mettre en commenteire pour voir les infos comme "count" en hover
-fig.data[0].hovertemplate='<b></b>%{label}'
+fig.data[0].hovertemplate="<b></b>%{label}"
 
 
 # Corrélations:
@@ -967,26 +1005,30 @@ fig = px.imshow(
     ct,
     text_auto=True,
     aspect="auto",
-    labels=dict(x="", y="", color=""),
+    labels={"x": "", "y": "", "color": ""},
     title="Age vs Gendre",
-    color_continuous_scale='Bluyl'
+    color_continuous_scale="Bluyl",
 )
 
 # Update layout for clarity
 fig.update_layout(
-    margin = dict(t=50, l=25, r=25, b=50),
-    title_font=dict(size=30),
-    title_x=0.4, title_y=0.97
+    margin = {"t": 50, "l": 25, "r": 25, "b": 50},
+    title_font={"size": 30},
+    title_x=0.4, title_y=0.97,
 )
 
 # Display the plot
-fig.show()
+st.plotly_chart(fig)
 
 # Ethnicités
 # Melanger les differentes characteres
-blended_column = [val for quad in zip(data['character1_ethnic_origin'], data['character2_ethnic_origin'],data['character3_ethnic_origin'],data['character4_ethnic_origin']) for val in quad]
+blended_column = [val for quad in zip(data["character1_ethnic_origin"],
+                                data["character2_ethnic_origin"],
+                                data["character3_ethnic_origin"],
+                                data["character4_ethnic_origin"],
+                                strict=False) for val in quad]
 data["Ethnicites"] = pd.DataFrame(blended_column)
-print(data["Ethnicites"])
+st.write(data["Ethnicites"])
 # Remplacer NaN avec None pour data["Ethnicites"]
 data["Ethnicites"]= data["Ethnicites"].fillna(value=None, method="ffill")
 
@@ -994,25 +1036,30 @@ data["Ethnicites"]= data["Ethnicites"].fillna(value=None, method="ffill")
 st.plotly_chart(fig)
 
 fig = px.treemap(data, path=[data["Ethnicites"]],
-                 title="Répartition de l'ethnicités des personnages",color_discrete_sequence=["#e44f43","#0b5773", 
-                     ]
+                 title="Répartition de l'ethnicités des personnages",
+                 color_discrete_sequence=["#e44f43","#0b5773",
+                     ],
                  )
-fig.update_traces(marker=dict(cornerradius=5))
+fig.update_traces(marker={"cornerradius": 5})
 
 fig.update_layout(
-    margin = dict(t=50, l=25, r=25, b=25),
-    title_font=dict(size=30),
-    title_x=0.04, title_y=0.95
+    margin = {"t": 50, "l": 25, "r": 25, "b": 25},
+    title_font={"size": 30},
+    title_x=0.04, title_y=0.95,
 )
 #mettre en commenteire pour voir les infos comme "count" en hover
-fig.data[0].hovertemplate='<b></b>%{label}'
+fig.data[0].hovertemplate="<b></b>%{label}"
 
-fig.show()
+st.plotly_chart(fig)
+
 # Gentil ou méchant
 # Melanger les differentes characteres
-blended_column = [val for quad in zip(data['character1_sentiment'], data['character2_sentiment'],data['character3_sentiment'],data['character1_sentiment']) for val in quad]
+blended_column = [val for quad in zip(data["character1_sentiment"],
+                        data["character2_sentiment"],
+                        data["character3_sentiment"],
+                        data["character1_sentiment"], strict=False) for val in quad]
 data["Sentiment"] = pd.DataFrame(blended_column)
-print(data["Sentiment"])
+st.write(data["Sentiment"])
 
 # Remplacer NaN avec None pour data["Ethnicites"]
 data["Sentiment"]= data["Sentiment"].fillna(value=None, method="ffill")
@@ -1026,47 +1073,50 @@ fig = px.treemap(data, path=["Sentiment"],color= data["Sentiment"], color_discre
     "Neutre": "#7bc0ac",
     "C'est compliqué": "#d3c922",
 },
-                 title="Répartition des sentiments envers les personnages"
+                 title="Répartition des sentiments envers les personnages",
                  )
-fig.update_traces(marker=dict(cornerradius=5))
+fig.update_traces(marker={"cornerradius": 5})
 
 fig.update_layout(
-    margin = dict(t=50, l=25, r=25, b=25),
-    title_font=dict(size=30),
-    title_x=0.04, title_y=0.95
+    margin = {"t": 50, "l": 25, "r": 25, "b": 25},
+    title_font={"size": 30},
+    title_x=0.04, title_y=0.95,
 )
 #mettre en commenteire pour voir les infos comme "count" en hover
-fig.data[0].hovertemplate='<b></b>%{label}'
+fig.data[0].hovertemplate="<b></b>%{label}"
 
-fig.show()
+st.plotly_chart(fig)
 
 
 # Principal ou secondaire
 # Melanger les differentes characteres
-blended_column = [val for quad in zip(data['character1_importance'], data['character2_importance'],data['character3_importance'],data['character1_importance']) for val in quad]
+blended_column = [val for quad in zip(data["character1_importance"],
+                        data["character2_importance"],data["character3_importance"],
+                        data["character1_importance"], strict=False) for val in quad]
 data["Importance"] = pd.DataFrame(blended_column)
-print(data["Importance"])
+st.write(data["Importance"])
 
 # Remplacer NaN avec None pour data["Ethnicites"]
 data["Importance"]= data["Importance"].fillna(value=None, method="ffill")
 
 st.plotly_chart(fig)
 
-fig = px.treemap(data, path=["Importance"], color_discrete_sequence = ["#0b5773","#0a3555","#101727"],
+fig = px.treemap(data, path=["Importance"],
+                 color_discrete_sequence = ["#0b5773","#0a3555","#101727"],
                  title="Importance des personnages",
                  )
-fig.update_traces(marker=dict(cornerradius=5))
+fig.update_traces(marker={"cornerradius": 5})
 
 fig.update_layout(
-    margin = dict(t=50, l=25, r=25, b=25),
+    margin = {"t": 50, "l": 25, "r": 25, "b": 25},
     title_font=dict(size=30),
-    title_x=0.04, title_y=0.95
+    title_x=0.04, title_y=0.95,
 )
 #mettre en commenteire pour voir les infos comme "count" en hover
-fig.data[0].hovertemplate='<b></b>%{label}'
+fig.data[0].hovertemplate="<b></b>%{label}"
 
-fig.show()
+st.plotly_chart(fig)
 
 
-# Possibilité de corréler chacun des 5 paramètres 
+# Possibilité de corréler chacun des 5 paramètres
 #        à nationalité du film / date du film / producteur / genre du film

@@ -50,10 +50,10 @@ if "list_film_choice_MUBI" not in st.session_state:
 ### C.Chargement des datasets
 @st.cache_data
 def load_header_tmdb():
-	with  open("secret/TMDB.txt", "r") as file:
+    with  open("./secret/TMDB.txt", "r") as file:
 	    file_lines = file.read().split('\n')
-	header_tmdb = [token.split(':') for token in file_lines][0][1].replace('/n','')
-	return header_tmdb
+    header_tmdb = [token.split(':') for token in file_lines][0][1].replace('/n','')
+    return header_tmdb
 
 st.session_state["header_tmdb"] = {
 	    "accept": "application/json",
@@ -68,7 +68,7 @@ def load_data_tmdb(tmdb):
 	df = pd.read_parquet(tmdb)
 	return df
 
-file_path_tmdb = 'data/TMDB_movie_dataset_v11.parquet.gzip' #'data/TMDB_movie_dataset_v11.csv'
+file_path_tmdb = './data/TMDB_movie_dataset_v11.parquet.gzip' #'data/TMDB_movie_dataset_v11.csv'
 
 if "tmdb_data" not in st.session_state:
 	st.session_state["tmdb_data"] = load_data_tmdb(file_path_tmdb)
@@ -78,10 +78,10 @@ tmdb_df = st.session_state["tmdb_data"][st.session_state["tmdb_data"]['adult']==
 #C.1.2 Load the data tmdb TV Show
 @st.cache_data  # 👈 Add the caching decorator # Reading from a Parquet file # #pd.read_csv(file) 
 def load_data_tmdb_tv(tmdb):
-	df = pd.read_csv(tmdb, sep=',')
+	df = pd.read_csv(tmdb, sep=",", encoding='utf-8')
 	return df
 
-file_path_tmdb_tv = 'data/TMDB_tv_dataset_v3.csv' #'data/TMDB_movie_dataset_v11.csv'
+file_path_tmdb_tv = './data/TMDB_tv_dataset_v3.csv' #'data/TMDB_movie_dataset_v11.csv'
 
 if "tmdb_data_tv" not in st.session_state:
     st.session_state["tmdb_data_tv"] = load_data_tmdb_tv(file_path_tmdb_tv)
@@ -96,11 +96,11 @@ tmdb_df_tv.insert(1,'year_last_air',tmdb_df_tv['last_air_date'].apply(lambda y :
 #C.2 Load the data mubi
 @st.cache_data  # 👈 Add the caching decorator
 def load_data_mubi(mubi):
-	df = pd.read_csv(mubi, sep=";", encoding='utf8')
+	df = pd.read_csv(mubi, sep=";", encoding='utf-8')
 	df = df.sort_values(by='title')
 	return df
 	
-file_path_mubi = 'data/liste_des_films_laureatsrenommee_tmdb_id_ARCHIVES_18_AVRIL_2024.csv'
+file_path_mubi = './data/liste_des_films_laureatsrenommee_tmdb_id_ARCHIVES_18_AVRIL_2024.csv'
 
 if "mubi_data" not in st.session_state:
     st.session_state["mubi_data"] = load_data_mubi(file_path_mubi)
@@ -109,11 +109,11 @@ mubi_df = st.session_state["mubi_data"]
 
 #C.3 Load the data questionnaire ODI
 @st.cache_data  # 👈 Add the caching decorator
-def load_data(file: str) -> pd.DataFrame:
-    df = pd.read_csv(file)
-    return df
+def load_data_odi(file: str) -> pd.DataFrame:
+	df = pd.read_csv(file, sep=",", encoding="utf-8")
+	return df
 	
-file_path_odi = './data/A enrichir-Etape 1 Identification du film - Feuille 1.csv'#'./data/Etape 1 Identification du film - Feuille 1.csv'
+file_path_odi = './data/A enrichir-Etape 1 Identification du film - Feuille 1.csv'
 
 ### Colonnes à ajouter
 	#Année de sortie - release_year
@@ -125,7 +125,7 @@ file_path_odi = './data/A enrichir-Etape 1 Identification du film - Feuille 1.cs
 	#Box Office - Allociné ?
 	
 if "odi_data" not in st.session_state:
-	st.session_state["odi_data"] = load_data(file_path_odi)
+	st.session_state["odi_data"] = load_data_odi(file_path_odi)
 
 odi_df = st.session_state["odi_data"]
 
@@ -184,21 +184,62 @@ for i in odi_df["id_tmdb"]:
 
 odi_df = pd.merge(odi_df, box_of_fr.drop_duplicates())
 
+#Enrichissement avec données de géolocalisation : latitude, longitude, continent
+@st.cache_data
+def get_lat_long(odi_df):
+	from geopy.geocoders import Nominatim
+	from pycountry_convert import country_alpha2_to_continent_code, country_name_to_country_alpha2
+
+	# Initialize Nominatim API
+	geolocator = Nominatim(user_agent="MyApp")
+	
+	continent_dict = {
+			"NA": "North America",
+			"SA": "South America",
+			"AS": "Asia",
+			"AF": "Africa",
+			"OC": "Oceania",
+			"EU": "Europe",
+			"AQ" : "Antarctica"}
+
+	# je crée une liste de genres uniques
+	liste_country_cine = list(set([c.lstrip().strip() for country in odi_df["production_countries"] for c in country.split(",")]))
+
+	geoloc_dict = {c:{'latitude' : geolocator.geocode(c).latitude,
+	   'longitude' : geolocator.geocode(c).longitude,
+		'continent' : continent_dict[country_alpha2_to_continent_code(country_name_to_country_alpha2(c))]} for c in liste_country_cine}
+	
+
+	list_continent = []
+	for country in odi_df["production_countries"]:
+		temp=[]
+		for c in country.split(", "):
+			temp.append(geoloc_dict[c]['continent'])
+		list_continent.append(temp)
+	
+	return geoloc_dict,list_continent
+
+odi_df.insert(311, "pays_rework",[pays if len(pays.split(",")) == 1 else "International" for pays in odi_df["production_countries"]],)
+odi_df.insert(312, 'latitude', odi_df["pays_rework"].apply(lambda c : get_lat_long(odi_df)[0][c]['latitude'] if c !='International' else ''))
+odi_df.insert(313, 'longitude',odi_df["pays_rework"].apply(lambda c : get_lat_long(odi_df)[0][c]['longitude'] if c !='International' else ''))
+odi_df.insert(314, 'continent',odi_df["pays_rework"].apply(lambda c : get_lat_long(odi_df)[0][c]['continent'] if c !='International' else 'International'))
+odi_df.insert(315, 'contient_list', get_lat_long(odi_df)[1])
+odi_df['contient_list'] = odi_df['contient_list'].apply(lambda c : ', '.join(c))
+
 #####################################
 ## F. Exporter les fichiers enrichis
 with st.container(border=True):
+	export_csv = st.button('Exporter le fichier ?')
 	def to_csv(df):
 		df.to_csv('./data/Etape 1 Identification du film - Feuille 1 - enrichi.csv',sep=';', index=False, encoding='utf-8')
-
-	st.dataframe(odi_df)
 	#Export du dataframe si clique sur le bouton 
-	export_csv = st.button('Exporter le fichier ?')
-	if export_csv :
+	if export_csv :		
 		to_csv(odi_df)
-		
 		st.success("Export réussi")
-		st.session_state["odi_data"] = odi_df
-		
+#st.session_state["odi_data"] = odi_df
+
+
+odi_df = st.session_state["odi_data"]
 
 ######################################
 ### D. Container du header
@@ -228,4 +269,5 @@ with cont_dataframe:
 		
 	with col_questionnaire.expander("Aperçu des données - Réponse Questionaires") :
 		st.dataframe(odi_df.head())
+
 
