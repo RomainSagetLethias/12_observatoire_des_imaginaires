@@ -38,7 +38,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
     with tempfile.NamedTemporaryFile(suffix=".sqlite", delete=False) as temp_file:
         temp_filename = temp_file.name
         with sqlite3.connect(temp_filename) as conn:
-            df.to_sql("shows", conn, index=False)
+            df.to_sql("series", conn, index=False)
 
     # Print db file to stdout
     os.system(f"cat {temp_filename}")

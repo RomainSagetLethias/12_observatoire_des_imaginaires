@@ -22,7 +22,7 @@ const query = view(debounce(Inputs.text(), 250));
 
 ```js
 import { SQLiteDatabaseClient } from "npm:@observablehq/sqlite";
-const db = FileAttachment("data/shows.sqlite").sqlite();
+const db = FileAttachment("data/series.sqlite").sqlite();
 ```
 
 ```js
@@ -30,14 +30,14 @@ const results = db.query(
   `
   SELECT
     *,
-    (SELECT COUNT(*) FROM shows) total
+    (SELECT COUNT(*) FROM series) total
   FROM
-    shows
+    series
   WHERE
-    shows.name LIKE ? COLLATE NOCASE OR
-    shows.original_name LIKE ? COLLATE NOCASE
+    series.name LIKE ? COLLATE NOCASE OR
+    series.original_name LIKE ? COLLATE NOCASE
   ORDER BY
-    shows.name ASC
+    series.name ASC
   LIMIT 200`,
   [`%${query}%`, `%${query}%`]
 );

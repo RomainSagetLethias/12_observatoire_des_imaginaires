@@ -63,27 +63,20 @@ pip install poetry
    jupyter notebook
    ```
 
-## Download datasets from kaggle
+## Environment Variables
 
-If you want to use kaggle to download datasets, please make sure to have api's credentials in ~/.kaggle/kaggle.json.
+This code base uses a `.env` file at the root directory of the code base.
 
-How to get .json with kaggle api's credentials : [here](https://github.com/Kaggle/kaggle-api#api-credentials)
-
-Once you have setup your venv with poetry, you can use commands in the Makefile to download tmdb datasets from kaggle :
-
-```bash
-make download-tmdb-movies-dataset
-make download-full-tmdb-tv-shows-dataset
-```
-
-Alternatively you can download directly the datasets from kaggle website :
-
-- [tmdb-movies-dataset](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies)
-- [full-tmdb-tv-shows-dataset](https://www.kaggle.com/datasets/asaniczka/full-tmdb-tv-shows-dataset-2023-150k-shows)
+| Variable         | Description                                                         | Default Value |
+| ---------------- | ------------------------------------------------------------------- | ------------- |
+| HF_TOKEN         | Hugging Face API Token. You must have write access to the datasets. | N/A           |
+| TMDB_API_KEY     | TMDB API Token.                                                     | N/A           |
+| TMDB_BATCH_SIZE  | Number of TMDB entries to download before updating a HF dataset.    | 10000         |
+| TMDB_MAX_RETRIES | Maximum number of times to retry a failed TMDB API call.            | 500           |
 
 ## Website to select a specific movie or TV show
 
-The [site-observable](https://github.com/dataforgoodfr/12_observatoire_des_imaginaires/tree/main/site-observable) directory contains
+The [observable](https://github.com/dataforgoodfr/12_observatoire_des_imaginaires/tree/main/site-observable) directory contains
 an observable framework site that collect film and movie data from the above datasets on kaggle and filters the datasets according
 to the following rules in order to reduced the size of the data present on the generated web site. This site provides a search UI
 allow a user to select a specific movie or TV show. The user can then click on the link for their selection to kick off the
@@ -129,11 +122,20 @@ To run the observable site in development mode you can run:
 invoke dev
 ```
 
-### Updating the Movie Database
+### Updating the Movie Dataset
 
 The [French regional TMDB Movies Dataset](https://huggingface.co/datasets/DataForGood/observatoire_des_imaginaires_movies)
 on Hugging Face can be updated using the following command:
 
 ```bash
 invoke update-movies-dataset
+```
+
+### Updating the Series Dataset
+
+The [French regional TMDB Series Dataset](https://huggingface.co/datasets/DataForGood/observatoire_des_imaginaires_series)
+on Hugging Face can be updated using the following command:
+
+```bash
+invoke update-series-dataset
 ```

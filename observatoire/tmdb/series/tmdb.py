@@ -14,11 +14,11 @@ lock = threading.Lock()
 FULL_LOG = False  # Mark True to log everything
 
 
-def get_latest_movie_id() -> int:
+def get_latest_series_id() -> int:
     """
-    Get the ID of the latest movie added to the TMDB database.
+    Get the ID of the latest series added to the TMDB database.
     """
-    url = "https://api.themoviedb.org/3/movie/latest"
+    url = "https://api.themoviedb.org/3/tv/latest"
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {TMDB_API_KEY}",
@@ -34,19 +34,19 @@ def get_latest_movie_id() -> int:
             retries += 1
             time.sleep(5)
 
-    # Extract the ID of the latest movie from the response
+    # Extract the ID of the latest tv show from the response
     response_in_json = json.loads(response.text)
-    movies_id = int(response_in_json["id"])
+    series_id = int(response_in_json["id"])
 
-    return movies_id
+    return series_id
 
 
-def get_keywords(movie_id: int) -> dict | None:
+def get_keywords(series_id: int) -> dict | None:
     """
     Gets keywords from TMDB
     """
 
-    url = f"https://api.themoviedb.org/3/movie/{movie_id}/keywords"
+    url = f"https://api.themoviedb.org/3/tv/{series_id}/keywords"
 
     headers = {
         "accept": "application/json",
@@ -60,36 +60,36 @@ def get_keywords(movie_id: int) -> dict | None:
     return None
 
 
-def handler_get_keywords(movie_id: int) -> list[int, str]:
+def handler_get_keywords(series_id: int) -> list[int, str]:
     """
     handles getting keywords
     """
 
-    data = get_keywords(movie_id)
+    data = get_keywords(series_id)
 
-    if not data or len(data["keywords"]) == 0:
+    if not data or len(data["results"]) == 0:
         return None
 
-    keywords_str = parse_keywords(data["keywords"])
+    keywords_str = parse_keywords(data["results"])
 
     return keywords_str
 
 
-def get_movie_data(
-    movie_json: list[str],
-    movie_id: int,
+def get_series_data(
+    series_json: list[str],
+    series_id: int,
     logger: logging,
     pbar: tqdm,
 ) -> None:
     if FULL_LOG:
-        logger.info(f"Processing {movie_id}")
+        logger.info(f"Processing {series_id}")
 
     with lock:
         pbar.update(1)
 
     try:
         time.sleep(0.2)
-        url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=fr-FR&region=FR"
+        url = f"https://api.themoviedb.org/3/tv/{series_id}?language=fr-FR&region=FR"
         headers = {
             "accept": "application/json",
             "Authorization": f"Bearer {TMDB_API_KEY}",
@@ -101,7 +101,7 @@ def get_movie_data(
             or response.status_code == HTTPStatus.TOO_MANY_REQUESTS
         ):
             logger.warning(
-                f"movie {movie_id} - Got {response.status_code} response, retrying...",
+                f"series {series_id} - Got {response.status_code} response, retrying...",
             )
             time.sleep(1)
 
@@ -109,15 +109,15 @@ def get_movie_data(
         if response.status_code == HTTPStatus.OK:
             rqst_json = response.json()
 
-            keywords = handler_get_keywords(movie_id)
+            keywords = handler_get_keywords(series_id)
             rqst_json["keywords"] = keywords
-            movie_json.append(json.dumps(rqst_json))
+            series_json.append(json.dumps(rqst_json))
 
             if FULL_LOG:
-                logger.info(f"movies collected: {len(movie_json)}")
+                logger.info(f"movies collected: {len(series_json)}")
 
     except Exception:
-        logger.exception(f"Expection for {movie_id} in process_movie_ids")
+        logger.exception(f"Expection for {series_id} in process_movie_ids")
 
     if FULL_LOG:
-        logger.info(f"Completed movie {movie_id}")
+        logger.info(f"Completed series {series_id}")
