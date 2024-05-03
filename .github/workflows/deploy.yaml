@@ -23,11 +23,11 @@ jobs:
           cache-dependency-path: observable/package.json
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11.4"
+          python-version: "3.12.3"
       - name: Setup Poetry
         uses: Gr1N/setup-poetry@v9
         with:
-          poetry-version: "1.7.1"
+          poetry-version: "1.8.2"
       - run: poetry install
       - run: yarn install --frozen-lockfile
       - run: poetry run yarn build
