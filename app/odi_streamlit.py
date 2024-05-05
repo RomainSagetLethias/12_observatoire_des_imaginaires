@@ -5,6 +5,7 @@
 # Core Pkgs
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 # Other Pkgs
@@ -541,6 +542,111 @@ st.divider()
 # À quelle époque se passent les récits ? Quelle est la proportion de récits qui ne se
 #        déroulent pas à l’époque de leur écriture ? Comment est-ce influencé par leur genre ?
 # Est-ce que ces tendances évoluent au cours du temps ?
+
+st.subheader("Analyse de l'époque du récit")
+
+# Define the ordered list of time periods
+time_periods = [
+    "Entre la préhistoire et l'antiquité",  # Prehistory to antiquity
+    "Entre le moyen-âge et le XVIIIe siècle",  # Middle Ages to 18th century
+    "Au XIXe siècle",  # 19th century
+    "Entre 1900 et 1951",  # 1900 to 1951
+    "Entre 1950 et 1980",  # 1950 to 1980
+    "Entre 1980 et 2000",  # 1980 to 2000
+    "Entre 2000 et 2010",  # 2000 to 2010
+    "Entre 2010 et 2020",  # 2010 to 2020
+    "Entre 2020 et 2030",  # 2020 to 2030
+    "Entre 2030 et 2050",  # 2030 to 2050
+    "Au-delà de 2050",  # Beyond 2050
+    "Autre",  # Other
+]
+
+# Count periods with environmental issues
+era = data.loc[:, ["story_era", "environmental_issues"]]
+
+# Process the 'story_era' column
+periods = era["story_era"].str.split(",").explode().str.strip()
+
+# Total count of periods
+total_counts = periods.value_counts().reindex(time_periods, fill_value=0)
+total_counts.columns = ["story_era", "total_count"]
+
+# Count of periods where environmental_issues is "Oui"
+oui_era = era[era["environmental_issues"] == "Oui"]["story_era"]
+oui_periods = oui_era.str.split(",").explode().str.strip()
+oui_counts = oui_periods.value_counts().reindex(time_periods, fill_value=0)
+oui_counts.columns = ["story_era", "oui_count"]
+
+# Merge counts
+counts = pd.merge(total_counts, oui_counts, on="story_era", how="left").fillna(0)
+# Rename columns using a dictionary
+counts.rename(columns={"count_x": "total_count", "count_y": "oui_count"}, inplace=True)
+
+# Calculate the ratio and convert to percentage
+counts["ratio_percentage"] = (counts["oui_count"] / counts["total_count"]) * 100
+counts["ratio_percentage"] = counts["ratio_percentage"].fillna(0)
+
+# Create a figure to which we will add the bars
+fig = go.Figure()
+
+# Add the first series
+fig.add_trace(
+    go.Bar(
+        x=counts.index,
+        y=counts["total_count"],
+        name="Frequency",  # Name, which appears in the legend
+        marker_color="indianred",
+    ),
+)
+
+# Add the second series
+fig.add_trace(
+    go.Bar(
+        x=counts.index,
+        y=counts["oui_count"],
+        name="Frequency with environmental issues",
+        marker_color="lightsalmon",
+    ),
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=counts.index,
+        y=counts["ratio_percentage"],
+        name="Ratio with environmental issues",
+        mode="lines+markers",
+        yaxis="y2",
+    ),
+)
+
+# Change the bar mode to group to display bars side by side
+fig.update_layout(
+    barmode="overlay",
+    title="Frequency of Each Story Era",
+    xaxis_tickangle=-45,
+    xaxis_title="Story Era",
+    yaxis=dict(
+        title="Frequency",
+        side="left",
+    ),
+    yaxis2=dict(
+        title="Ratio",
+        side="right",  # Secondary y-axis on the right
+        overlaying="y",  # This axis overlays the primary y-axis
+        range=[0, 100],
+    ),
+    legend=dict(
+        x=1.05,  # Places the legend to the right of the plot
+        y=1,  # Aligns the top of the legend with the top of the plot
+        xanchor="left",  # Anchors the legend from its left side
+        yanchor="top",  # Anchors the legend from its top
+    ),
+)
+
+st.plotly_chart(fig)
+
+
+
 
 # Visualisations
 # Répartitions:
