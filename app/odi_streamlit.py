@@ -35,11 +35,9 @@ def load_data(file: str) -> pd.DataFrame:
     return df
 
 # TODO connect to Google Sheet and load data
-file_path = "./data/Etape 1 Identification du film - Feuille 1 - enrichi.csv"
-#("https://raw.githubusercontent.com/dataforgoodfr/"
-# "12_observatoire_des_imaginaires/analyse/streamlit_app_v2/"
-# "data/Etape%201%20Identification%20du%20film%20-%20Feuille%201%20-%20enrichi.csv")
-#"data/Etape 1 Identification du film - Feuille 1 - enrichi.csv"
+file_path = ("https://raw.githubusercontent.com/dataforgoodfr/12_observatoire_des_imaginaires/"
+    "main/data/Etape%201%20Identification%20du%20film%20-%20Feuille%201%20-%20enrichi.csv")
+
 
 if "data" not in st.session_state:
     st.session_state["data"] = load_data(file_path)
