@@ -1,8 +1,8 @@
 name: Update Movies Dataset
 
 on:
-  # Run this workflow once per day, at 0:15 UTC
-  schedule: [{ cron: "15 0 * * *" }]
+  # Run this workflow on Sundays at 4:15 UTC
+  schedule: [{ cron: "15 4 * * 0" }]
   # Run this workflow when triggered manually in GitHub’s UI.
   workflow_dispatch: {}
 
@@ -19,7 +19,7 @@ jobs:
         with:
           poetry-version: "1.7.1"
       - run: poetry install
-      - run: poetry run python -m observatoire.tmdb.movies
+      - run: poetry run python -m observatoire.tmdb.series
         env:
           # Hugging Face credentials
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
