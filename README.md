@@ -29,7 +29,7 @@ pip install poetry
    cd 12_observatoire_des_imaginaires/
    ```
 
-3. **Configure `poetry` to create a Virtual Environment inside the project:**
+3. **Configure** `poetry` to create a Virtual Environment inside the project:
 
    Ensure that poetry will create a `.venv` directory into the project with the command:
 
@@ -37,7 +37,7 @@ pip install poetry
    poetry config virtualenvs.in-project true
    ```
 
-4. **Install Project Dependencies using `poetry`:**
+4. **Install Project Dependencies using** `poetry`:
 
    Use `poetry` to install the project dependencies.
 
@@ -67,20 +67,16 @@ pip install poetry
 
 This code base uses a `.env` file at the root directory of the code base.
 
-| Variable         | Description                                                         | Default Value |
-| ---------------- | ------------------------------------------------------------------- | ------------- |
-| HF_TOKEN         | Hugging Face API Token. You must have write access to the datasets. | N/A           |
-| TMDB_API_KEY     | TMDB API Token.                                                     | N/A           |
-| TMDB_BATCH_SIZE  | Number of TMDB entries to download before updating a HF dataset.    | 10000         |
-| TMDB_MAX_RETRIES | Maximum number of times to retry a failed TMDB API call.            | 500           |
+| Variable | Description | Default Value |
+| --- | --- | --- |
+| HF_TOKEN | Hugging Face API Token. You must have write access to the datasets. | N/A |
+| TMDB_API_KEY | TMDB API Token. | N/A |
+| TMDB_BATCH_SIZE | Number of TMDB entries to download before updating a HF dataset. | 10000 |
+| TMDB_MAX_RETRIES | Maximum number of times to retry a failed TMDB API call. | 500 |
 
 ## Website to select a specific movie or TV show
 
-The [observable](https://github.com/dataforgoodfr/12_observatoire_des_imaginaires/tree/main/site-observable) directory contains
-an observable framework site that collect film and movie data from the above datasets on kaggle and filters the datasets according
-to the following rules in order to reduced the size of the data present on the generated web site. This site provides a search UI
-allow a user to select a specific movie or TV show. The user can then click on the link for their selection to kick off the
-questionnaire on tally andis destined to be embedded in an iframe in the main Observatoire des Imaginaires web site.
+The [observable](https://github.com/dataforgoodfr/12_observatoire_des_imaginaires/tree/main/site-observable) directory contains an observable framework site that collect film and movie data from datasets on Hugging Face and filters the datasets according to the following rules in order to reduced the size of the data present on the generated web site. This site provides a search UI allow a user to select a specific movie or TV show. The user can then click on the link for their selection to kick off the questionnaire on tally andis destined to be embedded in an iframe in the main Observatoire des Imaginaires web site.
 
 Movies:
 
@@ -99,16 +95,19 @@ https://observatoire-des-imaginaires.observablehq.cloud/questionnaire
 
 [Install precommits](https://pre-commit.com/)
 
-    pre-commit run --all-files
+```
+pre-commit run --all-files
+```
 
 ## Use Tox to test your code
 
-    tox -vv
+```
+tox -vv
+```
 
 ## Tasks
 
-This repo includes invoke for pythonic task execution. To see the
-is of available tasks you can run:
+This repo includes invoke for pythonic task execution. To see the is of available tasks you can run:
 
 ```bash
 invoke -l
@@ -124,8 +123,7 @@ invoke dev
 
 ### Updating the Movie Dataset
 
-The [French regional TMDB Movies Dataset](https://huggingface.co/datasets/DataForGood/observatoire_des_imaginaires_movies)
-on Hugging Face can be updated using the following command:
+The [French regional TMDB Movies Dataset](https://huggingface.co/datasets/DataForGood/observatoire_des_imaginaires_movies) on Hugging Face can be updated using the following command:
 
 ```bash
 invoke update-movies-dataset
@@ -133,8 +131,7 @@ invoke update-movies-dataset
 
 ### Updating the Series Dataset
 
-The [French regional TMDB Series Dataset](https://huggingface.co/datasets/DataForGood/observatoire_des_imaginaires_series)
-on Hugging Face can be updated using the following command:
+The [French regional TMDB Series Dataset](https://huggingface.co/datasets/DataForGood/observatoire_des_imaginaires_series) on Hugging Face can be updated using the following command:
 
 ```bash
 invoke update-series-dataset
